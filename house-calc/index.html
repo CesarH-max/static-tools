@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>北京二手房贷款预算测算工具</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;}
+body{background:#f4f6f8;padding:16px;max-width:960px;margin:0 auto;color:#1f2329;}
+h1{font-size:22px;margin-bottom:12px;text-align:center;}
+h2{font-size:17px;margin:10px 0 6px;}
+.card{background:#ffffff;border-radius:10px;padding:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+@media(max-width:640px){.row{grid-template-columns:1fr;}}
+label{font-size:14px;display:block;margin-bottom:3px;color:#444;}
+input,select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;background:#fff;}
+input:focus,select:focus{outline:none;border-color:#4f46e5;}
+button{padding:10px 14px;border-radius:7px;border:none;background:#4f46e5;color:#fff;font-size:15px;cursor:pointer;margin:4px 2px;}
+button.secondary{background:#6b7280;}
+button:hover{opacity:0.92;}
+.tip{font-size:12px;color:#6b7280;margin:4px 0 8px;}
+.warn{color:#dc2626;font-weight:500;}
+.ok{color:#059669;}
+pre{white-space:pre-wrap;font-size:13px;line-height:1.6;background:#f8fafc;padding:12px;border-radius:8px;max-height:400px;overflow:auto;}
+.no-print{display:block;}
+@media print{
+@page{size:A4;margin:12mm;}
+.no-print{display:none !important;}
+body{background:#fff;padding:0;}
+.card{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+<div class="no-print">
+<h1>🏠 北京二手房预算测算</h1>
+
+<div class="card">
+<h2>一、房屋交易基础信息</h2>
+<div class="row">
+<div>
+<label>小区名称</label>
+<input id="community" placeholder="例如：XX家园">
+</div>
+<div>
+<label>建筑面积 ㎡</label>
+<input id="area" type="number" placeholder="面积">
+</div>
+</div>
+<div class="row">
+<div>
+<label>成交总价（元）</label>
+<input id="dealPrice" type="number" placeholder="实际成交价">
+</div>
+<div>
+<label>评估价（元）</label>
+<input id="evalPrice" type="number" placeholder="银行评估价">
+</div>
+</div>
+<div class="row">
+<div>
+<label>税务核定价（元）</label>
+<input id="taxBasePrice" type="number" placeholder="税务计税核定价">
+</div>
+<div>
+<label>定金（元，已付）</label>
+<input id="deposit" type="number" value="0">
+</div>
+</div>
+<div class="row">
+<div>
+<label>产权性质</label>
+<select id="propertyType">
+<option value="commodity">商品房</option>
+<option value="public">已购公房</option>
+<option value="eco1">一类经适房</option>
+<option value="eco2">二类经适房/回迁</option>
+<option value="limit">限价商品房</option>
+<option value="resettle">安置房</option>
+<option value="commercial">商办</option>
+</select>
+</div>
+<div>
+<label>建成年份</label>
+<input id="buildYear" type="number" placeholder="例如2000">
+</div>
+</div>
+<div class="row">
+<div>
+<label>房屋是否满几年</label>
+<select id="houseYearStatus">
+<option value="not2">不满2年</option>
+<option value="is2">满2不满5</option>
+<option value="is5notonly">满五不唯一（卖方）</option>
+<option value="is5only">满五唯一（卖方家庭）</option>
+</select>
+</div>
+<div>
+<label>是否老旧小区改造名单</label>
+<select id="renovated">
+<option value="0">否</option>
+<option value="1">是（需评估报告备注确认）</option>
+</select>
+</div>
+</div>
+<div class="row">
+<div>
+<label>卖方房屋抵押状态</label>
+<select id="sellerMortgage">
+<option value="none">无抵押</option>
+<option value="transfer">带押过户</option>
+<option value="needRedeem">需买方赎楼</option>
+</select>
+</div>
+<div>
+<label>赎楼预估余额(元)</label>
+<input id="redeemAmt" type="number" value="0">
+</div>
+</div>
+<div class="row">
+<div>
+<label>维修资金是否已缴纳</label>
+<select id="repairFundPaid">
+<option value="1">已缴纳</option>
+<option value="0">未缴纳，需补缴</option>
+</select>
+</div>
+<div>
+<label>其他杂费(代办/公证/评估，元)</label>
+<input id="otherFee" type="number" value="0">
+</div>
+</div>
+<div class="row">
+<div>
+<label>中介费买方承担比例</label>
+<input id="buyerAgentRate" type="number" step="0.01" value="1.00">
+<div class="tip">市场惯例买卖双方各1%，卖方部分不计入买方预算</div>
+</div>
+<div>
+<label>卖方税费实际承担方</label>
+<select id="sellerTaxBear">
+<option value="seller">卖方自理</option>
+<option value="buyer">买方承担</option>
+</select>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h2>二、购房家庭与贷款信息</h2>
+<div class="row">
+<div>
+<label>购房套数（买方）</label>
+<select id="buySet">
+<option value="1">首套</option>
+<option value="2">二套</option>
+</select>
+</div>
+<div>
+<label>主贷人年龄</label>
+<input id="mainAge" type="number" placeholder="计算贷款年限">
+</div>
+</div>
+<div class="row">
+<div>
+<label>男方月收入（元）</label>
+<input id="manIncome" type="number" placeholder="月收入">
+</div>
+<div>
+<label>女方月收入（元）</label>
+<input id="womanIncome" type="number" placeholder="月收入">
+</div>
+</div>
+<div class="row">
+<div>
+<label>公积金缴存年限</label>
+<input id="gjjYear" type="number" placeholder="缴存年数">
+</div>
+<div>
+<label>是否存在未结清公积金贷款</label>
+<select id="hasUnsettleGjj">
+<option value="0">无</option>
+<option value="1">有（不可再贷公积金）</option>
+</select>
+</div>
+</div>
+<div class="row">
+<div>
+<label>每月其他负债月供（车贷/消费贷）</label>
+<input id="otherDebtMonth" type="number" value="0">
+</div>
+<div>
+<label>贷款类型</label>
+<select id="loanType">
+<option value="gjj">纯公积金</option>
+<option value="com">纯商贷</option>
+<option value="mix">组合贷</option>
+<option value="cash">全款</option>
+</select>
+</div>
+</div>
+<div>
+<label>公积金额度上浮条件（可多选）</label>
+<div style="margin:6px 0;">
+<input type="checkbox" id="rise1"><label for="rise1" style="display:inline">城六区户籍购买城外住房</label>
+<input type="checkbox" id="rise2"><label for="rise2" style="display:inline">绿色建筑</label>
+<input type="checkbox" id="rise3"><label for="rise3" style="display:inline">二孩及以上家庭</label>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h2>操作</h2>
+<button onclick="calcAll()">🔢 开始测算</button>
+<button class="secondary" onclick="printReport()">📄 预览/打印报告(PDF)</button>
+<div class="tip">所有计算在本地浏览器完成，不上传数据</div>
+</div>
+
+<div class="card">
+<h2>测算结果</h2>
+<pre id="resultOut">请点击【开始测算】</pre>
+</div>
+</div>
+
+<div id="reportWrap" style="display:none;">
+<div id="reportBody"></div>
+</div>
+
+<script>
+function getEl(id){return document.getElementById(id);}
+
+function calcAll(){
+const community = getEl("community").value||"未填写小区";
+const area = Number(getEl("area").value)||0;
+const dealPrice = Number(getEl("dealPrice").value)||0;
+const evalPrice = Number(getEl("evalPrice").value)||0;
+const taxBasePrice = Number(getEl("taxBasePrice").value)||dealPrice;
+const deposit = Number(getEl("deposit").value)||0;
+const propertyType = getEl("propertyType").value;
+const buildYear = Number(getEl("buildYear").value)||0;
+const houseYearStatus = getEl("houseYearStatus").value;
+const renovated = Number(getEl("renovated").value);
+const sellerMortgage = getEl("sellerMortgage").value;
+const redeemAmt = Number(getEl("redeemAmt").value)||0;
+const repairFundPaid = Number(getEl("repairFundPaid").value);
+const otherFee = Number(getEl("otherFee").value)||0;
+const buyerAgentRate = Number(getEl("buyerAgentRate").value)||0;
+const sellerTaxBear = getEl("sellerTaxBear").value;
+const buySet = Number(getEl("buySet").value);
+const mainAge = Number(getEl("mainAge").value)||35;
+const manIncome = Number(getEl("manIncome").value)||0;
+const womanIncome = Number(getEl("womanIncome").value)||0;
+const gjjYear = Number(getEl("gjjYear").value)||0;
+const hasUnsettleGjj = Number(getEl("hasUnsettleGjj").value);
+const otherDebtMonth = Number(getEl("otherDebtMonth").value)||0;
+const loanType = getEl("loanType").value;
+const rise1 = getEl("rise1").checked;
+const rise2 = getEl("rise2").checked;
+const rise3 = getEl("rise3").checked;
+
+//自动推断结构、土地剩余年限
+let buildStruct="steelMix";
+if(buildYear>0){
+if(buildYear>=2000) buildStruct="steelMix";
+else buildStruct="brick";
+}
+const landTotalYear = (propertyType==="commercial")?40:70;
+let remainLandYear=0;
+if(buildYear>0) remainLandYear = landTotalYear - (new Date().getFullYear()-buildYear);
+remainLandYear=Math.max(0,remainLandYear);
+
+//公积金基础上限
+let gjjBaseMax = (buySet===1)?1200000:800000;
+let riseAdd=0;
+if(rise1) riseAdd +=100000;
+if(rise2) riseAdd +=100000;
+if(rise3) riseAdd +=100000;
+let gjjMaxTotal = gjjBaseMax + riseAdd;
+if(hasUnsettleGjj===1) gjjMaxTotal=0;
+
+//年限限制
+let maxAgeYear = 68 - mainAge;
+maxAgeYear = Math.max(1,Math.min(30,maxAgeYear));
+let maxHouseYear;
+if(renovated===1){
+maxHouseYear = remainLandYear;
+}else{
+if(buildStruct==="steelMix") maxHouseYear=60-(new Date().getFullYear()-buildYear);
+else maxHouseYear=50-(new Date().getFullYear()-buildYear);
+}
+maxHouseYear = Math.max(1,maxHouseYear);
+let loanMaxYear = Math.min(maxAgeYear,maxHouseYear,30);
+
+//首付比例
+let firstRate = buySet===1?0.20:0.25;
+let loanRate = 1-firstRate;
+const loanBasePrice = Math.min(dealPrice,evalPrice>0?evalPrice:dealPrice);
+let maxLoanPossible = loanBasePrice * loanRate;
+
+//利率
+let rateGjj = buySet===1?0.026:0.03075;
+let rateCom = buySet===1?0.0385:0.0445;
+
+//土地出让金/综合地价款
+let landTax=0;
+let landTaxNote="";
+if(propertyType==="public"){landTax=taxBasePrice*0.01;landTaxNote="已购公房土地出让金1%";}
+if(propertyType==="eco2"){landTax=taxBasePrice*0.03;landTaxNote="二类经适房土地出让金3%";}
+if(propertyType==="eco1"){landTax=taxBasePrice*0.10;landTaxNote="一类经适房综合地价款10%";}
+if(propertyType==="limit"){landTax=taxBasePrice*0.35;landTaxNote="限价房综合地价款35%";}
+
+//契税
+let deedTaxRate;
+if(area<=90){deedTaxRate = buySet===1?0.01:0.02;}
+else{deedTaxRate = buySet===1?0.015:0.02;}
+const deedTax = taxBasePrice * deedTaxRate;
+
+//增值税及附加
+let vat=0;
+let vatNote="";
+if(houseYearStatus==="not2"){vat=taxBasePrice/1.05*0.053;vatNote="不满2年增值税5.3%";}
+
+//个税
+let personalTax=0;
+if(houseYearStatus==="is5only"){personalTax=0;}
+else{personalTax=taxBasePrice*0.01;}
+
+//维修资金
+let repairFund=0;
+if(repairFundPaid===0){repairFund=area*200;}
+
+//中介费买方
+const buyerAgentFee = dealPrice * (buyerAgentRate/100);
+
+//登记费
+const regFee = 80;
+
+//买方合计税费
+let buyerTotalTax = deedTax + landTax + repairFund + regFee + buyerAgentFee + otherFee;
+//卖方法定税费
+let sellerStatTax = vat + personalTax;
+let actualSellerTaxPay = (sellerTaxBear==="buyer")?sellerStatTax:0;
+
+//首付
+let needFirstPay = dealPrice - maxLoanPossible;
+let cashTotal = deposit + needFirstPay + buyerTotalTax + actualSellerTaxPay;
+if(sellerMortgage==="needRedeem") cashTotal += redeemAmt;
+
+//还款测算，取公积金可贷与最大可贷
+let useGjjLoan = Math.min(gjjMaxTotal,maxLoanPossible);
+let useComLoan = Math.max(0,maxLoanPossible-useGjjLoan);
+if(loanType==="gjj") useComLoan=0;
+if(loanType==="com") useGjjLoan=0;
+if(loanType==="cash"){useGjjLoan=0;useComLoan=0;maxLoanYear=0;}
+
+function calcEMI(p,r,n){
+let mRate=r/12;
+if(mRate===0) return 0;
+return p*mRate*Math.pow(1+mRate,n)/(Math.pow(1+mRate,n)-1);
+}
+function calcEMB(p,r,n){
+let mRate=r/12;
+let mon=n;
+let firstMonth = p/mon + p*mRate;
+return firstMonth;
+}
+const nYear = loanMaxYear;
+const nMon = nYear*12;
+const emiGjj = calcEMI(useGjjLoan,rateGjj,nMon);
+const emiCom = calcEMI(useComLoan,rateCom,nMon);
+const totalEMI = emiGjj + emiCom;
+
+const embGjj = calcEMB(useGjjLoan,rateGjj,nMon);
+const embCom = calcEMB(useComLoan,rateCom,nMon);
+const totalEMB = embGjj + embCom;
+
+//债务比校验
+const familyMonthIncome = manIncome + womanIncome;
+let debtRatioWarn="";
+if(familyMonthIncome>0 && totalEMI>0){
+const totalMonthOut = totalEMI + otherDebtMonth;
+const ratio = totalMonthOut / familyMonthIncome;
+if(ratio>0.6) debtRatioWarn="⚠️总负债收入比超过60%，银行审批存在风险";
+else debtRatioWarn="✅负债收入比合规";
+}
+
+//风险提示
+let riskList=[];
+if(evalPrice>0 && evalPrice<dealPrice){
+const diffPrice = dealPrice - evalPrice;
+riskList.push(`⚠️评估价低于成交价，需要额外现金补差：${diffPrice.toLocaleString()}元`);
+}
+if(hasUnsettleGjj===1) riskList.push("⚠️家庭存在未结清公积金贷款，无法办理公积金贷款");
+if(sellerMortgage==="needRedeem") riskList.push("⚠️需要买方出资赎楼，建议走资金监管，存在交易风险");
+if(renovated===1) riskList.push("⚠️老旧小区改造：必须评估报告备注，公积金才认可年限放宽");
+if(debtRatioWarn) riskList.push(debtRatioWarn);
+
+//输出文本
+let out = [];
+out.push("==== 房屋交易概况 ====");
+out.push(`小区：${community}`);
+out.push(`面积：${area}㎡｜建成年份：${buildYear||"未填"}`);
+out.push(`成交总价：${dealPrice.toLocaleString()} 元`);
+out.push(`评估价：${evalPrice.toLocaleString()} 元`);
+out.push(`计税核定价：${taxBasePrice.toLocaleString()} 元`);
+out.push(`产权性质：${propertyType}`);
+out.push(`推断建筑结构：${buildStruct==="steelMix"?"钢混":"砖混"}`);
+out.push(`剩余土地年限推断：${remainLandYear}年`);
+out.push(`卖方房屋年限状态：${houseYearStatus}(卖方家庭)`);
+out.push(`主贷人年龄：${mainAge}岁；贷款最长可贷年限：${loanMaxYear}年`);
+out.push(`买方套数：${buySet===1?"首套":"二套"}`);
+out.push(`家庭月总收入：${familyMonthIncome.toLocaleString()}元；其他负债月供：${otherDebtMonth.toLocaleString()}元`);
+out.push("");
+out.push("==== 费用明细 ====");
+out.push(`定金（已付）：${deposit.toLocaleString()} 元`);
+out.push(`预估最低首付：${needFirstPay.toLocaleString()} 元`);
+out.push(`【买方税费】`);
+out.push(`  契税：${deedTax.toLocaleString()} 元`);
+if(landTax>0) out.push(`  ${landTaxNote}：${landTax.toLocaleString()} 元`);
+if(repairFund>0) out.push(`  补缴维修资金：${repairFund.toLocaleString()} 元`);
+out.push(`  登记费：${regFee} 元`);
+out.push(`  买方中介费(${buyerAgentRate}%)：${buyerAgentFee.toLocaleString()} 元`);
+out.push(`  其他杂费：${otherFee.toLocaleString()} 元`);
+out.push(`【卖方法定税费】增值税+个税：${sellerStatTax.toLocaleString()}元；实际承担：${sellerTaxBear==="buyer"?"买方":"卖方自理"}`);
+if(actualSellerTaxPay>0) out.push(`  买方代付卖方税费：${actualSellerTaxPay.toLocaleString()}元`);
+if(sellerMortgage==="needRedeem") out.push(`  赎楼资金：${redeemAmt.toLocaleString()}元`);
+out.push(`👉买方合计需要准备前期现金：${cashTotal.toLocaleString()}元`);
+out.push("");
+out.push("==== 贷款方案 ====");
+out.push(`公积金可贷上限(含上浮)：${gjjMaxTotal.toLocaleString()}元`);
+out.push(`计划公积金贷款：${useGjjLoan.toLocaleString()}元；利率：${(rateGjj*100).toFixed(2)}%`);
+out.push(`计划商业贷款：${useComLoan.toLocaleString()}元；利率：${(rateCom*100).toFixed(2)}%`);
+out.push(`贷款年限：${nYear}年(${nMon}期)`);
+out.push(`等额本息月供：${Math.round(totalEMI).toLocaleString()} 元`);
+out.push(`等额本金首月月供：${Math.round(totalEMB).toLocaleString()} 元`);
+out.push("");
+out.push("====风险预警====");
+if(riskList.length>0){riskList.forEach(r=>out.push(r));}else{out.push("✅未识别明显风险");}
+out.push("");
+out.push("【免责】本测算仅模拟，实际以税务、公积金中心、银行审批为准。");
+
+getEl("resultOut").innerText = out.join("\n");
+window.lastReportText = out.join("\n");
+}
+
+function printReport(){
+if(!window.lastReportText){alert("请先点击开始测算");return;}
+getEl("reportBody").innerHTML = `<pre style="font-size:13px;line-height:1.7;">${window.lastReportText}</pre>`;
+getEl("reportWrap").style.display="block";
+window.print();
+getEl("reportWrap").style.display="none";
+}
+</script>
+</body>
+</html>
