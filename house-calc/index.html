@@ -1,455 +1,1015 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>北京二手房贷款预算测算工具</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>北京二手房购房测算器</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;}
-body{background:#f4f6f8;padding:16px;max-width:960px;margin:0 auto;color:#1f2329;}
-h1{font-size:22px;margin-bottom:12px;text-align:center;}
-h2{font-size:17px;margin:10px 0 6px;}
-.card{background:#ffffff;border-radius:10px;padding:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
-@media(max-width:640px){.row{grid-template-columns:1fr;}}
-label{font-size:14px;display:block;margin-bottom:3px;color:#444;}
-input,select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:15px;background:#fff;}
-input:focus,select:focus{outline:none;border-color:#4f46e5;}
-button{padding:10px 14px;border-radius:7px;border:none;background:#4f46e5;color:#fff;font-size:15px;cursor:pointer;margin:4px 2px;}
-button.secondary{background:#6b7280;}
-button:hover{opacity:0.92;}
-.tip{font-size:12px;color:#6b7280;margin:4px 0 8px;}
-.warn{color:#dc2626;font-weight:500;}
-.ok{color:#059669;}
-pre{white-space:pre-wrap;font-size:13px;line-height:1.6;background:#f8fafc;padding:12px;border-radius:8px;max-height:400px;overflow:auto;}
-.no-print{display:block;}
-@media print{
-@page{size:A4;margin:12mm;}
-.no-print{display:none !important;}
-body{background:#fff;padding:0;}
-.card{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid;}
+:root{
+  --bg:#f3f5f9; --card:#ffffff; --line:#e4e8ef; --txt:#161b26; --muted:#6b7484;
+  --brand:#2457e6; --brand-soft:#edf2ff; --brand-line:#c9d6fb;
+  --ok:#0b8a4b; --ok-soft:#e9f7ef;
+  --warn:#a35a00; --warn-soft:#fff6e6;
+  --risk:#b3261e; --risk-soft:#fdecea;
+  --radius:14px;
 }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:22px 20px 60px}
+
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.top h1{margin:0;font-size:23px;letter-spacing:-.4px}
+.top .sub{margin:4px 0 0;color:var(--muted);font-size:12.5px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid var(--line);background:#fff;color:var(--txt);padding:8px 14px;border-radius:9px;
+  font-size:13px;cursor:pointer;font-family:inherit;transition:.15s}
+button:hover{border-color:var(--brand-line);color:var(--brand)}
+button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+button.primary:hover{background:#1a46c9;color:#fff}
+button.ghost{background:transparent;border-style:dashed}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:16px}
+.chips .lab{font-size:12px;color:var(--muted);margin-right:2px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px;font-size:12.5px;cursor:pointer;color:#39414f}
+.chip:hover{border-color:var(--brand-line);background:var(--brand-soft);color:var(--brand)}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 348px;gap:16px;align-items:start}
+.col{display:flex;flex-direction:column;gap:14px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;
+  box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.card h2{margin:0 0 12px;font-size:14.5px;font-weight:650;display:flex;align-items:center;gap:8px}
+.card h2 .idx{width:19px;height:19px;border-radius:6px;background:var(--brand-soft);color:var(--brand);
+  font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;flex:0 0 auto}
+.card h2 .tip{font-weight:400;font-size:11.5px;color:var(--muted);margin-left:auto}
+
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.row.one{grid-template-columns:1fr}
+.row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.f{display:flex;flex-direction:column;gap:5px}
+.f label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
+.f label em{font-style:normal;color:#9aa2b1;font-size:11px}
+.inp{position:relative;display:flex;align-items:center}
+.inp input,.inp select{width:100%;height:37px;border:1px solid var(--line);border-radius:9px;padding:0 11px;
+  font-size:13.5px;font-family:inherit;color:var(--txt);background:#fff;outline:none;transition:.15s;min-width:0}
+.inp input:focus,.inp select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(36,87,230,.10)}
+.inp .unit{position:absolute;right:11px;font-size:12px;color:#9aa2b1;pointer-events:none}
+.inp.hasunit input{padding-right:38px}
+.chk{display:flex;align-items:center;gap:8px;height:37px;padding:0 11px;border:1px solid var(--line);
+  border-radius:9px;background:#fff;cursor:pointer;font-size:13px;color:#39414f}
+.chk input{width:15px;height:15px;accent-color:var(--brand);cursor:pointer}
+.chk.on{border-color:var(--brand-line);background:var(--brand-soft)}
+.note-line{margin:10px 0 0;font-size:11.5px;color:#98a0af;line-height:1.7}
+
+.side{position:sticky;top:18px;display:flex;flex-direction:column;gap:14px}
+.hero{background:linear-gradient(160deg,#1e46c9,#2457e6 55%,#3a72ff);color:#fff;border:none;
+  border-radius:var(--radius);padding:18px 18px 16px;box-shadow:0 8px 22px rgba(36,87,230,.22)}
+.hero .k{font-size:12px;opacity:.82;letter-spacing:.3px}
+.hero .v{font-size:30px;font-weight:750;letter-spacing:-1px;line-height:1.2;margin-top:2px}
+.hero .v small{font-size:13px;font-weight:500;opacity:.85;margin-left:4px}
+.hero .split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.24)}
+.hero .split div span{display:block;font-size:11.5px;opacity:.82}
+.hero .split div b{font-size:16px;font-weight:700}
+
+.rows{display:flex;flex-direction:column}
+.line{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px dashed #edf0f5;font-size:13px}
+.line:last-child{border-bottom:none}
+.line .l{color:var(--muted)}
+.line .r{font-weight:600;font-variant-numeric:tabular-nums}
+.line .r.big{font-size:15px;color:var(--brand)}
+
+.tips{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+.tip-item{display:flex;gap:8px;padding:9px 11px;border-radius:9px;font-size:12.3px;line-height:1.55}
+.tip-item .dot{width:6px;height:6px;border-radius:50%;margin-top:6px;flex:0 0 auto}
+.tip-ok{background:var(--ok-soft);color:#0a6b3b}.tip-ok .dot{background:var(--ok)}
+.tip-warn{background:var(--warn-soft);color:#8a4a00}.tip-warn .dot{background:#e0a02a}
+.tip-risk{background:var(--risk-soft);color:#8d2119}.tip-risk .dot{background:var(--risk)}
+
+.tables{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;margin-top:16px}
+table{width:100%;border-collapse:collapse;font-size:12.8px}
+table th{background:#f8f9fc;color:var(--muted);font-weight:600;text-align:right;padding:8px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+table th:first-child{text-align:left}
+table td{padding:8px 9px;border-bottom:1px solid #f1f3f8;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table td:first-child{text-align:left;white-space:normal;color:#2b3242}
+table tr.total td{font-weight:700;background:#fafbff;border-bottom:none}
+table td .note{color:#9aa2b1;font-size:11px;margin-left:4px}
+
+details{border:1px solid var(--line);border-radius:var(--radius);background:#fff;padding:0;margin-top:16px;overflow:hidden}
+details summary{padding:13px 18px;cursor:pointer;font-size:13.5px;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details summary::-webkit-details-marker{display:none}
+details summary .arrow{color:var(--muted);font-size:11px;transition:.2s}
+details[open] summary .arrow{transform:rotate(90deg)}
+details .body{padding:0 18px 16px;border-top:1px solid var(--line)}
+.combo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.combo{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12px;background:#fcfdff}
+.combo b{display:block;font-size:12.8px;margin-bottom:4px}
+.combo span{color:var(--muted);display:block;line-height:1.5}
+.combo.hot{border-color:var(--brand-line);background:var(--brand-soft)}
+
+.foot{margin-top:22px;font-size:11.5px;color:#98a0af;line-height:1.8}
+.foot b{color:#6b7484}
+
+@media (max-width:1040px){
+  .grid{grid-template-columns:1fr}
+  .side{position:static}
+  .tables{grid-template-columns:1fr}
+  .combo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:560px){
+  .wrap{padding:14px 12px 40px}
+  .row,.row.three{grid-template-columns:1fr}
+  .combo-grid{grid-template-columns:1fr}
+  .hero .v{font-size:26px}
+  .card{padding:14px}
+  .btns{width:100%}
+  .btns button{flex:1 1 45%;min-height:38px}
+  .inp input,.inp select{font-size:16px}
+  .rp{font-size:12px}
+  .rp-title{font-size:18px}
+  .rp .kv{grid-template-columns:1fr}
+  .rp table{font-size:11px}
+  .rp th,.rp td{padding:4px 5px}
+}
+#printReport{display:none}
+
+/* 报告通用样式（屏幕预览与打印共用） */
+.rp{line-height:1.7;color:#161b26;font-size:13px}
+.rp-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+  border-bottom:2px solid #161b26;padding-bottom:10px;margin-bottom:6px}
+.rp-kicker{font-size:11px;letter-spacing:2px;color:#666}
+.rp-title{font-size:22px;font-weight:750;margin-top:4px;letter-spacing:-.4px}
+.rp-date{font-size:11.5px;color:#444;text-align:right;line-height:1.8;white-space:nowrap}
+.rp h3{font-size:14px;margin:18px 0 7px;padding-left:8px;border-left:3px solid #161b26}
+.rp table{width:100%;border-collapse:collapse;font-size:12.3px;margin-top:4px}
+.rp th,.rp td{border:1px solid #cfd4dd;padding:6px 8px;text-align:left;vertical-align:top}
+.rp th{background:#f3f5f9;font-weight:600}
+.rp td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rp td.note{color:#555;font-size:11px}
+.rp .kv{border:1px solid #cfd4dd;padding:9px 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}
+.rp .kv div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted #c4cad4;padding:3px 0;font-size:12.3px}
+.rp .kv div b{font-variant-numeric:tabular-nums}
+.rp ul{margin:4px 0 0;padding-left:18px;font-size:12.3px}
+.rp ul li{margin-bottom:4px}
+.rp p{font-size:12.3px;margin:5px 0}
+.rp .hl{font-weight:700}
+.rp-sign{margin-top:18px;border-top:1px solid #c4cad4;padding-top:8px;font-size:11px;color:#555;line-height:1.7}
+.rp .risk-box{border:1px solid #e3a6a2;background:#fdf3f2;border-radius:10px;padding:10px 13px;margin-top:4px}
+.rp .risk-box ul{padding-left:16px}
+.rp .risk-box li{color:#8d2119}
+
+@media print{
+  @page{size:A4;margin:14mm 13mm}
+  body{background:#fff;color:#000}
+  .top,.chips,.grid,.tables,.foot,details,button{display:none!important}
+  .wrap{max-width:none;padding:0}
+  #printReport{display:block}
+  .rp{font-size:9.4pt;line-height:1.62}
+  .rp-title{font-size:16pt}
+  .rp h3{font-size:11pt;margin:13px 0 5px}
+  .rp table{font-size:9pt}
+  .rp th,.rp td{border-color:#8a8a8a;padding:3.5px 5px}
+  .rp th{background:#eee}
+  .rp td.note{font-size:8pt}
+  .rp .kv{padding:7px 9px;gap:3px 14px}
+  .rp .kv div{font-size:9pt}
+  .rp ul,.rp p{font-size:9pt}
+  .rp .risk-box li{color:#000}
+  .rp-sign{margin-top:14px;border-top:1px solid #999;padding-top:6px;font-size:8.2pt;color:#444;line-height:1.65}
+  .rp tr{break-inside:avoid}
+}
+body.preview #printReport{display:block;background:#fff;border:1px solid var(--line);
+  border-radius:var(--radius);padding:26px 30px;margin-top:6px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+body.preview .grid,body.preview .tables,body.preview .chips,body.preview .foot,body.preview details{display:none}
 </style>
 </head>
 <body>
-<div class="no-print">
-<h1>🏠 北京二手房预算测算</h1>
+<div class="wrap">
 
-<div class="card">
-<h2>一、房屋交易基础信息</h2>
-<div class="row">
-<div>
-<label>小区名称</label>
-<input id="community" placeholder="例如：XX家园">
-</div>
-<div>
-<label>建筑面积 ㎡</label>
-<input id="area" type="number" placeholder="面积">
-</div>
-</div>
-<div class="row">
-<div>
-<label>成交总价（元）</label>
-<input id="dealPrice" type="number" placeholder="实际成交价">
-</div>
-<div>
-<label>评估价（元）</label>
-<input id="evalPrice" type="number" placeholder="银行评估价">
-</div>
-</div>
-<div class="row">
-<div>
-<label>税务核定价（元）</label>
-<input id="taxBasePrice" type="number" placeholder="税务计税核定价">
-</div>
-<div>
-<label>定金（元，已付）</label>
-<input id="deposit" type="number" value="0">
-</div>
-</div>
-<div class="row">
-<div>
-<label>产权性质</label>
-<select id="propertyType">
-<option value="commodity">商品房</option>
-<option value="public">已购公房</option>
-<option value="eco1">一类经适房</option>
-<option value="eco2">二类经适房/回迁</option>
-<option value="limit">限价商品房</option>
-<option value="resettle">安置房</option>
-<option value="commercial">商办</option>
-</select>
-</div>
-<div>
-<label>建成年份</label>
-<input id="buildYear" type="number" placeholder="例如2000">
-</div>
-</div>
-<div class="row">
-<div>
-<label>房屋是否满几年</label>
-<select id="houseYearStatus">
-<option value="not2">不满2年</option>
-<option value="is2">满2不满5</option>
-<option value="is5notonly">满五不唯一（卖方）</option>
-<option value="is5only">满五唯一（卖方家庭）</option>
-</select>
-</div>
-<div>
-<label>是否老旧小区改造名单</label>
-<select id="renovated">
-<option value="0">否</option>
-<option value="1">是（需评估报告备注确认）</option>
-</select>
-</div>
-</div>
-<div class="row">
-<div>
-<label>卖方房屋抵押状态</label>
-<select id="sellerMortgage">
-<option value="none">无抵押</option>
-<option value="transfer">带押过户</option>
-<option value="needRedeem">需买方赎楼</option>
-</select>
-</div>
-<div>
-<label>赎楼预估余额(元)</label>
-<input id="redeemAmt" type="number" value="0">
-</div>
-</div>
-<div class="row">
-<div>
-<label>维修资金是否已缴纳</label>
-<select id="repairFundPaid">
-<option value="1">已缴纳</option>
-<option value="0">未缴纳，需补缴</option>
-</select>
-</div>
-<div>
-<label>其他杂费(代办/公证/评估，元)</label>
-<input id="otherFee" type="number" value="0">
-</div>
-</div>
-<div class="row">
-<div>
-<label>中介费买方承担比例</label>
-<input id="buyerAgentRate" type="number" step="0.01" value="1.00">
-<div class="tip">市场惯例买卖双方各1%，卖方部分不计入买方预算</div>
-</div>
-<div>
-<label>卖方税费实际承担方</label>
-<select id="sellerTaxBear">
-<option value="seller">卖方自理</option>
-<option value="buyer">买方承担</option>
-</select>
-</div>
-</div>
-</div>
+  <div class="top">
+    <div>
+      <h1>北京二手房购房测算器</h1>
+      <p class="sub">产权性质 · 满五唯一 · 评估价 / 核定价 · 老旧改造 · 年龄与负债 · 公积金 / 商贷 / 组合贷 · 住宅 / 商办　|　口径截至 2026 年 11 月</p>
+    </div>
+    <div class="btns">
+      <button id="btnCopy" class="primary">复制测算结果</button>
+      <button id="btnPreview" class="ghost">预览报告</button>
+      <button id="btnReset" class="ghost">重置</button>
+      <button id="btnPrint" class="ghost">打印 / 存 PDF</button>
+    </div>
+  </div>
 
-<div class="card">
-<h2>二、购房家庭与贷款信息</h2>
-<div class="row">
-<div>
-<label>购房套数（买方）</label>
-<select id="buySet">
-<option value="1">首套</option>
-<option value="2">二套</option>
-</select>
-</div>
-<div>
-<label>主贷人年龄</label>
-<input id="mainAge" type="number" placeholder="计算贷款年限">
-</div>
-</div>
-<div class="row">
-<div>
-<label>男方月收入（元）</label>
-<input id="manIncome" type="number" placeholder="月收入">
-</div>
-<div>
-<label>女方月收入（元）</label>
-<input id="womanIncome" type="number" placeholder="月收入">
-</div>
-</div>
-<div class="row">
-<div>
-<label>公积金缴存年限</label>
-<input id="gjjYear" type="number" placeholder="缴存年数">
-</div>
-<div>
-<label>是否存在未结清公积金贷款</label>
-<select id="hasUnsettleGjj">
-<option value="0">无</option>
-<option value="1">有（不可再贷公积金）</option>
-</select>
-</div>
-</div>
-<div class="row">
-<div>
-<label>每月其他负债月供（车贷/消费贷）</label>
-<input id="otherDebtMonth" type="number" value="0">
-</div>
-<div>
-<label>贷款类型</label>
-<select id="loanType">
-<option value="gjj">纯公积金</option>
-<option value="com">纯商贷</option>
-<option value="mix">组合贷</option>
-<option value="cash">全款</option>
-</select>
-</div>
-</div>
-<div>
-<label>公积金额度上浮条件（可多选）</label>
-<div style="margin:6px 0;">
-<input type="checkbox" id="rise1"><label for="rise1" style="display:inline">城六区户籍购买城外住房</label>
-<input type="checkbox" id="rise2"><label for="rise2" style="display:inline">绿色建筑</label>
-<input type="checkbox" id="rise3"><label for="rise3" style="display:inline">二孩及以上家庭</label>
-</div>
-</div>
-</div>
+  <div class="chips">
+    <span class="lab">快捷场景</span>
+    <div class="chip" data-sc="full5">满五唯一</div>
+    <div class="chip" data-sc="full5no">满五不唯一</div>
+    <div class="chip" data-sc="two">满二不满五</div>
+    <div class="chip" data-sc="notwo">不满二</div>
+    <div class="chip" data-sc="old">老旧小区改造房</div>
+    <div class="chip" data-sc="combo">公积金不够走组合贷</div>
+    <div class="chip" data-sc="commercial">商办（非住宅）</div>
+  </div>
 
-<div class="card">
-<h2>操作</h2>
-<button onclick="calcAll()">🔢 开始测算</button>
-<button class="secondary" onclick="printReport()">📄 预览/打印报告(PDF)</button>
-<div class="tip">所有计算在本地浏览器完成，不上传数据</div>
-</div>
+  <div class="grid">
+    <div class="col">
 
-<div class="card">
-<h2>测算结果</h2>
-<pre id="resultOut">请点击【开始测算】</pre>
-</div>
-</div>
+      <!-- ========== 1 房屋与交易 ========== -->
+      <div class="card">
+        <h2><span class="idx">1</span>房屋与交易基本信息</h2>
+        <div class="row one" style="margin-bottom:12px">
+          <div class="f"><label>小区 / 位置 <em>选填，用于报告标题</em></label><div class="inp"><input id="fName" type="text" placeholder="如：朝阳区 ×× 小区 × 号楼 × 单元"></div></div>
+        </div>
+        <div class="row three">
+          <div class="f"><label>成交价 / 网签价</label><div class="inp hasunit"><input id="fPrice" data-num type="number" step="1" value="165"><span class="unit">万元</span></div></div>
+          <div class="f"><label>评估价 <em>贷款按孰低</em></label><div class="inp hasunit"><input id="fEval" data-num type="number" step="1" value="165"><span class="unit">万元</span></div></div>
+          <div class="f"><label>税务核定价 <em>计税基数</em></label><div class="inp hasunit"><input id="fTaxPrice" data-num type="number" step="1" value="165"><span class="unit">万元</span></div></div>
+        </div>
+        <div class="row three" style="margin-top:12px">
+          <div class="f"><label>建筑面积</label><div class="inp hasunit"><input id="fArea" data-num type="number" step="0.1" value="58.9"><span class="unit">㎡</span></div></div>
+          <div class="f"><label>房屋性质</label><div class="inp">
+            <select id="fType"><option value="residential">住宅</option><option value="commercial">商办 / 非住宅</option></select>
+          </div></div>
+          <div class="f"><label>产权性质</label><div class="inp">
+            <select id="fOwn">
+              <option value="commercial_house">商品房</option>
+              <option value="gongfang">已购公房（房改房）</option>
+              <option value="yijing">一类经济适用房</option>
+              <option value="erjing">二类经适房 / 回迁房</option>
+              <option value="xianjia">限价商品房</option>
+              <option value="anzhi">安置房</option>
+            </select>
+          </div></div>
+        </div>
+        <div class="row three" style="margin-top:12px">
+          <div class="f"><label>建成年份 <em id="ageHint">房龄自动算</em></label><div class="inp hasunit"><input id="fYear" data-num type="number" step="1" value="2001"><span class="unit">年</span></div></div>
+          <div class="f"><label>建筑结构 <em>默认按年份推断</em></label><div class="inp">
+            <select id="fStruct">
+              <option value="auto">自动推断（按建成年份）</option>
+              <option value="concrete">钢混（按 60 年）</option>
+              <option value="brick">砖混（按 50 年）</option>
+            </select>
+          </div></div>
+          <div class="f"><label>剩余土地使用年限 <em>自动，不用填</em></label><div class="chk" style="cursor:default;background:#fbfcff"><span id="landChip" style="font-weight:600;font-size:12.5px">—</span></div></div>
+        </div>
+        <div class="row three" style="margin-top:12px">
+          <div class="f">
+            <label>老旧小区改造 <em>须评估报告备注</em></label>
+            <label class="chk" id="wrapRenov"><input id="fRenovated" type="checkbox">已完成改造且评估报告写明</label>
+          </div>
+          <div class="f"><label>卖方房屋抵押情况</label><div class="inp">
+            <select id="fMortgage">
+              <option value="none">无抵押</option>
+              <option value="transfer">有抵押 · 走带押过户</option>
+              <option value="redeem">有抵押 · 需买方赎楼</option>
+            </select>
+          </div></div>
+          <div class="f"><label>卖方剩余贷款余额 <em>赎楼用</em></label><div class="inp hasunit"><input id="fMortBal" data-num type="number" step="1" value="0"><span class="unit">万元</span></div></div>
+        </div>
+        <p class="note-line">只有评估报告明确备注「已完成老旧小区综合整治」，公积金才按剩余土地年限核定；单纯小区在改造名单内、评估报告未写，年限政策不生效。住宅内部已不区分普通 / 非普通住房（北京 2024-12-01 起取消该标准）。</p>
+      </div>
 
-<div id="reportWrap" style="display:none;">
-<div id="reportBody"></div>
+      <!-- ========== 2 持有与税费 ========== -->
+      <div class="card">
+        <h2><span class="idx">2</span>卖方持有情况与费用</h2>
+        <div class="row three">
+          <div class="f"><label>卖方持有年限 <em>契税票 / 房本</em></label><div class="inp hasunit"><input id="fHoldYears" data-num type="number" step="0.5" value="3.5"><span class="unit">年</span></div></div>
+          <div class="f">
+            <label>卖方家庭唯一住房 <em>指卖方，非买方</em></label>
+            <label class="chk" id="wrapUnique"><input id="fUnique" type="checkbox">是卖方家庭唯一</label>
+          </div>
+          <div class="f"><label>原购入价 <em>差额计税用</em></label><div class="inp hasunit"><input id="fOrig" data-num type="number" step="1" value="90"><span class="unit">万元</span></div></div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <div class="f"><label>个税计算方式</label><div class="inp">
+            <select id="fTaxMethod">
+              <option value="auto">自动取低（核定 1% vs 差额 20%）</option>
+              <option value="assess">核定征收（全额 1%）</option>
+              <option value="gap">差额征收（差额 20%）</option>
+            </select>
+          </div></div>
+          <div class="f"><label>卖方税费由谁承担 <em>合同约定</em></label><div class="inp">
+            <select id="fTaxBorne">
+              <option value="seller">卖方自理（法定）</option>
+              <option value="buyer">买方实际承担</option>
+            </select>
+          </div></div>
+        </div>
+        <div class="row three" style="margin-top:12px">
+          <div class="f">
+            <label>维修资金是否已缴</label>
+            <label class="chk" id="wrapRepair"><input id="fRepairDue" type="checkbox">未缴，需买方补缴</label>
+          </div>
+          <div class="f"><label>补缴维修资金 <em>未缴时填</em></label><div class="inp hasunit"><input id="fRepairFee" data-num type="number" step="0.1" value="0"><span class="unit">万元</span></div></div>
+          <div class="f"><label>其他杂费 <em>评估 / 代办 / 公证</em></label><div class="inp hasunit"><input id="fOtherFee" data-num type="number" step="0.1" value="0"><span class="unit">万元</span></div></div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <div class="f"><label>当前持有情况判定</label><div class="chk" style="cursor:default;background:#fbfcff"><span id="holdChip" style="font-weight:600;color:var(--brand)">—</span></div></div>
+          <div class="f"><label>中介费（买方承担部分）</label><div class="inp hasunit"><input id="fAgency" data-num type="number" step="0.1" value="1"><span class="unit">%</span></div></div>
+        </div>
+      </div>
+
+      <!-- ========== 3 买方资格 ========== -->
+      <div class="card">
+        <h2><span class="idx">3</span>买方资格与首付</h2>
+        <div class="row three">
+          <div class="f"><label>家庭名下住房套数（本次购买）</label><div class="inp">
+            <select id="fBuyer"><option value="1">首套</option><option value="2">二套</option><option value="3">三套及以上</option></select>
+          </div></div>
+          <div class="f"><label>最低首付比例</label><div class="chk" style="cursor:default;background:#fbfcff"><span id="downChip" style="font-weight:600">—</span></div></div>
+          <div class="f"><label>定金（计入首付）</label><div class="inp hasunit"><input id="fDeposit" data-num type="number" step="1" value="10"><span class="unit">万元</span></div></div>
+        </div>
+        <div class="row three" style="margin-top:12px">
+          <div class="f"><label>商业贷款年利率</label><div class="inp hasunit"><input id="fCommRate" data-num type="number" step="0.05" value="3.05"><span class="unit">%</span></div></div>
+          <div class="f"><label>每月其他负债 <em>车贷 / 消费贷</em></label><div class="inp hasunit"><input id="fOtherDebt" data-num type="number" step="100" value="0"><span class="unit">元/月</span></div></div>
+          <div class="f"><label>家庭购房资格 <em>仅提示</em></label><div class="chk" style="cursor:default;background:#fbfcff"><span style="font-size:12px;color:var(--muted)">以社保 / 个税 / 套数核验为准</span></div></div>
+        </div>
+      </div>
+
+      <!-- ========== 4 贷款方案 ========== -->
+      <div class="card">
+        <h2><span class="idx">4</span>贷款方案</h2>
+        <div class="row three">
+          <div class="f"><label>贷款方式</label><div class="inp">
+            <select id="fMode">
+              <option value="fund">纯公积金</option>
+              <option value="combo">组合贷（公积金 + 商贷）</option>
+              <option value="commercial">纯商业贷款</option>
+              <option value="cash">全款</option>
+            </select>
+          </div></div>
+          <div class="f"><label>商贷申请年限</label><div class="inp hasunit"><input id="fCommTerm" data-num type="number" step="1" value="25"><span class="unit">年</span></div></div>
+          <div class="f"><label>主贷人年龄 <em>年限按主贷人算</em></label><div class="inp hasunit"><input id="fBorrowAge" data-num type="number" step="1" value="35"><span class="unit">岁</span></div></div>
+        </div>
+        <div class="row one" style="margin-top:12px">
+          <div class="f">
+            <label>公积金限制条件</label>
+            <label class="chk" id="wrapFundBlock"><input id="fFundBlock" type="checkbox">家庭已有未结清公积金贷款（本次不能再贷公积金）</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== 5 公积金资质 ========== -->
+      <div class="card">
+        <h2><span class="idx">5</span>公积金缴存资质（额度与年限）</h2>
+        <div class="row three">
+          <div class="f">
+            <label>缴存人数</label>
+            <label class="chk" id="wrapSingle"><input id="fSingle" type="checkbox">仅一人缴存（不勾为双缴存）</label>
+          </div>
+          <div class="f"><label>缴存年限 <em>较长一方，算额度用</em></label><div class="inp hasunit"><input id="fFundYears" data-num type="number" step="0.5" value="7.5"><span class="unit">年</span></div></div>
+          <div class="f"><label>可贷年限 <em>自动测算，无需填</em></label><div class="chk" style="cursor:default;background:#fbfcff"><span id="fundTermChip" style="font-weight:600;color:var(--brand);font-size:12.5px">—</span></div></div>
+        </div>
+        <div class="row three" style="margin-top:12px">
+          <div class="f"><label>男方月收入 <em>或缴存基数</em></label><div class="inp hasunit"><input id="fIncomeM" data-num type="number" step="100" value="12000"><span class="unit">元</span></div></div>
+          <div class="f"><label>女方月收入 <em>或缴存基数</em></label><div class="inp hasunit"><input id="fIncomeF" data-num type="number" step="100" value="7420"><span class="unit">元</span></div></div>
+          <div class="f"><label>家庭月收入合计 <em>自动相加</em></label><div class="chk" style="cursor:default;background:#fbfcff"><span id="incomeChip" style="font-weight:600;font-size:12.5px">—</span></div></div>
+        </div>
+        <div class="row three" style="margin-top:12px">
+          <div class="f"><label>上浮：城六区户籍购城外首套</label><label class="chk" id="wrapUpOut"><input id="fUpOut" type="checkbox">+20 万</label></div>
+          <div class="f"><label>上浮：绿色 / 装配式 / 超低能耗</label><label class="chk" id="wrapUpGreen"><input id="fUpGreen" type="checkbox">+40 万</label></div>
+          <div class="f"><label>上浮：本市户籍二孩及以上</label><label class="chk" id="wrapUpKids"><input id="fUpKids" type="checkbox">+40 万</label></div>
+        </div>
+        <p class="note-line">贷款年限不能手填：由「68 岁 − 主贷人年龄」与「房屋剩余年限」取短自动得出。额度按缴存年限 ×20 万（单人）/ 40 万（双人），并受上限、评估价、还款能力三重限制；仅一人缴存时还款能力按男方收入审核。</p>
+      </div>
+
+    </div>
+
+    <!-- ========== 结果 ========== -->
+    <aside class="side">
+      <div class="hero">
+        <div class="k">前期一次性资金（定金 + 首付 + 税费杂费）</div>
+        <div class="v" id="rUpfront">—<small>万元</small></div>
+        <div class="split">
+          <div><span>首付（含定金）</span><b id="rDown">—</b></div>
+          <div><span>税费及其他费用</span><b id="rTaxFee">—</b></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>贷款与月供<span class="tip" id="rTermTip">—</span></h2>
+        <div class="rows">
+          <div class="line"><span class="l">公积金可贷</span><span class="r" id="rFundLoan">—</span></div>
+          <div class="line"><span class="l">商贷金额</span><span class="r" id="rCommLoan">—</span></div>
+          <div class="line"><span class="l">首月月供（等额本息）</span><span class="r big" id="rMonthly">—</span></div>
+          <div class="line"><span class="l">首月月供（等额本金）</span><span class="r" id="rMonthly2">—</span></div>
+          <div class="line"><span class="l">贷款总利息（等额本息）</span><span class="r" id="rInterest">—</span></div>
+          <div class="line"><span class="l">购房总支出（含利息）</span><span class="r" id="rTotal">—</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>关键校验</h2>
+        <div class="tips" id="tips"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="tables">
+    <div class="card">
+      <h2>税费与费用明细<span class="tip">买方承担口径</span></h2>
+      <table>
+        <thead><tr><th>项目</th><th>金额</th><th>计算口径</th></tr></thead>
+        <tbody id="taxBody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>贷款方案对比<span class="tip">同一贷款额下两种还款方式</span></h2>
+      <table>
+        <thead><tr><th>项目</th><th>等额本息</th><th>等额本金</th></tr></thead>
+        <tbody id="loanBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <details>
+    <summary><span class="arrow">▶</span>六种持有组合的税费规则速查（北京现行口径）</summary>
+    <div class="body">
+      <div class="combo-grid">
+        <div class="combo hot"><b>满五 · 唯一（卖方）</b><span>增值税：免征<br>个人所得税：免征<br>契税：按买方套数 / 面积</span></div>
+        <div class="combo"><b>满五 · 不唯一</b><span>增值税：免征<br>个税：核定 1% 或差额 20%（取低）<br>契税：按买方套数 / 面积</span></div>
+        <div class="combo"><b>满二不满五 · 唯一</b><span>增值税：免征<br>个税：不因唯一免征，仍按 1% 或差额 20%<br>契税：按买方套数 / 面积</span></div>
+        <div class="combo"><b>满二不满五 · 不唯一</b><span>增值税：免征<br>个税：1% 或差额 20%<br>契税：按买方套数 / 面积</span></div>
+        <div class="combo"><b>不满二 · 唯一</b><span>增值税：按 3% 征收率全额<br>个税：1% 或差额 20%<br>契税：按买方套数 / 面积</span></div>
+        <div class="combo"><b>不满二 · 不唯一</b><span>增值税：按 3% 征收率全额<br>个税：1% 或差额 20%<br>契税：按买方套数 / 面积</span></div>
+      </div>
+      <p class="note-line">「唯一」指卖方家庭唯一住房，只影响个税的满五唯一免征；增值税只看是否满 2 年。商办（非住宅）不适用住宅优惠，另按差额 5% 增值税、土地增值税、差额 20% 个税、0.05% 印花税计算。</p>
+    </div>
+  </details>
+
+  <div class="foot">
+    <b>规则依据：</b>契税（家庭唯一 140㎡及以下 1%、以上 1.5%；二套 140㎡及以下 1%、以上 2%；三套及非住宅 3%，2024-12-01 起）；个人销售住房增值税（满 2 年免征、不足 2 年按 3% 全额，2026-01-01 起）；北京公积金：单人每缴存一年 20 万、双人 40 万，首套上限 120 万 / 240 万，可叠加上浮；首套公积金利率 2.6%、二套 3.075%；贷款期限最长 30 年，按「68 岁减年龄」与房屋剩余年限取短；首套最低首付 20%、二套 25%。<br>
+    <b>说明：</b>本工具为测算参考，税额以税务核定价和完税凭证为准，公积金额度、年限、利率以公积金中心审批为准；商办土地增值税、公房 / 经适房土地收益为估算，实际按核定。未含评估费以外的隐性杂费时请在「其他杂费」中补充。微信内置浏览器可能影响打印 / 导出 PDF，建议复制链接用系统浏览器（Safari / Chrome / 系统浏览器）打开。
+  </div>
+
+  <div id="printReport" class="print-only"></div>
 </div>
 
 <script>
-function getEl(id){return document.getElementById(id);}
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  var CURRENT_YEAR = Math.max(2024, new Date().getFullYear());
+  var FUND_RATE_FIRST = 0.026, FUND_RATE_SECOND = 0.03075;
 
-function calcAll(){
-const community = getEl("community").value||"未填写小区";
-const area = Number(getEl("area").value)||0;
-const dealPrice = Number(getEl("dealPrice").value)||0;
-const evalPrice = Number(getEl("evalPrice").value)||0;
-const taxBasePrice = Number(getEl("taxBasePrice").value)||dealPrice;
-const deposit = Number(getEl("deposit").value)||0;
-const propertyType = getEl("propertyType").value;
-const buildYear = Number(getEl("buildYear").value)||0;
-const houseYearStatus = getEl("houseYearStatus").value;
-const renovated = Number(getEl("renovated").value);
-const sellerMortgage = getEl("sellerMortgage").value;
-const redeemAmt = Number(getEl("redeemAmt").value)||0;
-const repairFundPaid = Number(getEl("repairFundPaid").value);
-const otherFee = Number(getEl("otherFee").value)||0;
-const buyerAgentRate = Number(getEl("buyerAgentRate").value)||0;
-const sellerTaxBear = getEl("sellerTaxBear").value;
-const buySet = Number(getEl("buySet").value);
-const mainAge = Number(getEl("mainAge").value)||35;
-const manIncome = Number(getEl("manIncome").value)||0;
-const womanIncome = Number(getEl("womanIncome").value)||0;
-const gjjYear = Number(getEl("gjjYear").value)||0;
-const hasUnsettleGjj = Number(getEl("hasUnsettleGjj").value);
-const otherDebtMonth = Number(getEl("otherDebtMonth").value)||0;
-const loanType = getEl("loanType").value;
-const rise1 = getEl("rise1").checked;
-const rise2 = getEl("rise2").checked;
-const rise3 = getEl("rise3").checked;
+  function num(id){ var v = parseFloat($(id).value); return isNaN(v) ? 0 : v; }
+  function money(n){ return '¥' + Math.round(n).toLocaleString('zh-CN'); }
+  function wan(n){ return (n/1e4).toFixed(1) + ' 万'; }
+  function pct(n){ return (n*100).toFixed(1) + '%'; }
 
-//自动推断结构、土地剩余年限
-let buildStruct="steelMix";
-if(buildYear>0){
-if(buildYear>=2000) buildStruct="steelMix";
-else buildStruct="brick";
-}
-const landTotalYear = (propertyType==="commercial")?40:70;
-let remainLandYear=0;
-if(buildYear>0) remainLandYear = landTotalYear - (new Date().getFullYear()-buildYear);
-remainLandYear=Math.max(0,remainLandYear);
+  function annuity(P, r, n){
+    if(n <= 0) return 0;
+    if(r <= 0) return P / n;
+    return P * r / (1 - Math.pow(1 + r, -n));
+  }
+  function equalPrincipal(P, r, n){
+    if(n <= 0) return {first:0, dec:0, total:0, interest:0};
+    var princ = P / n, first = princ + P * r, dec = P * r / n;
+    var total = first * n - dec * n * (n - 1) / 2;
+    return {first:first, dec:dec, total:total, interest:total - P};
+  }
+  function pvOf(r, n, pmt){
+    if(n <= 0) return 0;
+    if(r <= 0) return pmt * n;
+    return pmt * (1 - Math.pow(1 + r, -n)) / r;
+  }
+  function holdLabel(y, u){
+    var s = y >= 5 ? '满五' : (y >= 2 ? '满二不满五' : '不满二');
+    return s + (u ? ' · 卖方唯一' : ' · 卖方不唯一');
+  }
 
-//公积金基础上限
-let gjjBaseMax = (buySet===1)?1200000:800000;
-let riseAdd=0;
-if(rise1) riseAdd +=100000;
-if(rise2) riseAdd +=100000;
-if(rise3) riseAdd +=100000;
-let gjjMaxTotal = gjjBaseMax + riseAdd;
-if(hasUnsettleGjj===1) gjjMaxTotal=0;
+  function calc(){
+    /* ---------- 输入 ---------- */
+    var price = num('fPrice') * 1e4;
+    var evalP = num('fEval') * 1e4;
+    var taxP = num('fTaxPrice') * 1e4;
+    var area  = num('fArea');
+    var type  = $('fType').value;
+    var own   = $('fOwn').value;
+    var structSel = $('fStruct').value;
+    var year  = num('fYear');
+    var age   = Math.max(0, CURRENT_YEAR - year);
+    var struct = structSel === 'auto' ? (year >= 2000 ? 'concrete' : 'brick') : structSel;
+    var renov = $('fRenovated').checked;
+    var land  = Math.max(0, (type === 'residential' ? 70 : 40) - age);
+    var holdY = num('fHoldYears');
+    var unique= $('fUnique').checked;
+    var orig  = num('fOrig') * 1e4;
+    var buyer = parseInt($('fBuyer').value, 10);
+    var agency= num('fAgency') / 100;
+    var borne = $('fTaxBorne').value;
+    var repairDue = $('fRepairDue').checked;
+    var repairFee = repairDue ? num('fRepairFee') * 1e4 : 0;
+    var otherFee  = num('fOtherFee') * 1e4;
+    var mortgage  = $('fMortgage').value;
+    var mortBal   = num('fMortBal') * 1e4;
+    var deposit   = num('fDeposit') * 1e4;
 
-//年限限制
-let maxAgeYear = 68 - mainAge;
-maxAgeYear = Math.max(1,Math.min(30,maxAgeYear));
-let maxHouseYear;
-if(renovated===1){
-maxHouseYear = remainLandYear;
-}else{
-if(buildStruct==="steelMix") maxHouseYear=60-(new Date().getFullYear()-buildYear);
-else maxHouseYear=50-(new Date().getFullYear()-buildYear);
-}
-maxHouseYear = Math.max(1,maxHouseYear);
-let loanMaxYear = Math.min(maxAgeYear,maxHouseYear,30);
+    var mode  = $('fMode').value;
+    var single= $('fSingle').checked;
+    var fYears= num('fFundYears');
+    var incomeM = num('fIncomeM'), incomeF = num('fIncomeF');
+    var incomeTotal = incomeM + incomeF;
+    var income = single ? incomeM : incomeTotal;
+    var bAge  = num('fBorrowAge');
+    var cRate = num('fCommRate') / 100;
+    var cTerm = num('fCommTerm');
+    var otherDebt = num('fOtherDebt');
+    var fundBlock = $('fFundBlock').checked;
+    var upOut = $('fUpOut').checked, upGreen = $('fUpGreen').checked, upKids = $('fUpKids').checked;
+    var taxMethod = $('fTaxMethod').value;
 
-//首付比例
-let firstRate = buySet===1?0.20:0.25;
-let loanRate = 1-firstRate;
-const loanBasePrice = Math.min(dealPrice,evalPrice>0?evalPrice:dealPrice);
-let maxLoanPossible = loanBasePrice * loanRate;
+    var isRes = type === 'residential';
+    var full2 = holdY >= 2, full5 = holdY >= 5;
+    var taxBase = Math.max(price, taxP);
+    var loanBase = Math.min(price, evalP);
 
-//利率
-let rateGjj = buySet===1?0.026:0.03075;
-let rateCom = buySet===1?0.0385:0.0445;
+    /* ---------- 税费（按计税基数） ---------- */
+    var deedRate;
+    if(!isRes) deedRate = 0.03;
+    else if(buyer >= 3) deedRate = 0.03;
+    else if(area <= 140) deedRate = 0.01;
+    else deedRate = (buyer === 1 ? 0.015 : 0.02);
+    var deed = taxBase * deedRate;
 
-//土地出让金/综合地价款
-let landTax=0;
-let landTaxNote="";
-if(propertyType==="public"){landTax=taxBasePrice*0.01;landTaxNote="已购公房土地出让金1%";}
-if(propertyType==="eco2"){landTax=taxBasePrice*0.03;landTaxNote="二类经适房土地出让金3%";}
-if(propertyType==="eco1"){landTax=taxBasePrice*0.10;landTaxNote="一类经适房综合地价款10%";}
-if(propertyType==="limit"){landTax=taxBasePrice*0.35;landTaxNote="限价房综合地价款35%";}
+    var vat = 0, surtax = 0, vatNote = '';
+    if(isRes){
+      if(full2){ vat = 0; surtax = 0; vatNote = '满 2 年免征'; }
+      else { vat = taxBase / 1.03 * 0.03; surtax = vat * 0.06; vatNote = '不满 2 年，3% 全额'; }
+    } else {
+      var gapV = Math.max(0, taxBase - orig);
+      vat = gapV / 1.05 * 0.05; surtax = vat * 0.06;
+      vatNote = '非住宅按差额 5%';
+    }
 
-//契税
-let deedTaxRate;
-if(area<=90){deedTaxRate = buySet===1?0.01:0.02;}
-else{deedTaxRate = buySet===1?0.015:0.02;}
-const deedTax = taxBasePrice * deedTaxRate;
+    var incomeTax = 0, itNote = '';
+    if(isRes && full5 && unique){
+      incomeTax = 0; itNote = '满五唯一免征';
+    } else if(isRes){
+      var gapBase = Math.max(0, taxBase - orig - vat - surtax - orig * 0.03);
+      var gapTax  = gapBase * 0.2;
+      var assTax  = taxBase * 0.01;
+      if(orig <= 0){ incomeTax = assTax; itNote = '无原值，核定 1%'; }
+      else if(taxMethod === 'assess'){ incomeTax = assTax; itNote = '核定 1%'; }
+      else if(taxMethod === 'gap'){ incomeTax = gapTax; itNote = '差额 20%'; }
+      else {
+        if(assTax <= gapTax){ incomeTax = assTax; itNote = '核定 1%（与差额取低）'; }
+        else { incomeTax = gapTax; itNote = '差额 20%（与核定取低）'; }
+      }
+    } else {
+      var gapBase2 = Math.max(0, taxBase - orig - vat - surtax);
+      incomeTax = gapBase2 * 0.2;
+      itNote = '非住宅差额 20%';
+    }
 
-//增值税及附加
-let vat=0;
-let vatNote="";
-if(houseYearStatus==="not2"){vat=taxBasePrice/1.05*0.053;vatNote="不满2年增值税5.3%";}
+    var landTax = 0, ltNote = '—';
+    if(!isRes){
+      var deduct = orig > 0 ? orig * (1 + 0.05 * Math.min(holdY, 20)) + vat + surtax + deed + taxBase * 0.0005 : 0;
+      var gain = Math.max(0, taxBase - deduct);
+      var ratio = deduct > 0 ? gain / deduct : 0;
+      var rate = 0, sd = 0;
+      if(ratio <= 0.5){ rate = 0.3; sd = 0; }
+      else if(ratio <= 1){ rate = 0.4; sd = 0.05; }
+      else if(ratio <= 2){ rate = 0.5; sd = 0.15; }
+      else { rate = 0.6; sd = 0.35; }
+      landTax = Math.max(0, gain * rate - deduct * sd);
+      ltNote = deduct > 0 ? '增值率 ' + (ratio*100).toFixed(0) + '%，四档累进' : '缺原值，需税务核定';
+    }
 
-//个税
-let personalTax=0;
-if(houseYearStatus==="is5only"){personalTax=0;}
-else{personalTax=taxBasePrice*0.01;}
+    var stamp = isRes ? 0 : taxBase * 0.0005;
+    var regFee = isRes ? 80 : 550;
+    var agencyFee = price * agency;
 
-//维修资金
-let repairFund=0;
-if(repairFundPaid===0){repairFund=area*200;}
+    /* ---------- 产权性质土地收益 ---------- */
+    var landFee = 0, landFeeNote = '—';
+    if(isRes){
+      if(own === 'gongfang'){ landFee = taxBase * 0.01; landFeeNote = '已购公房土地出让金 1%'; }
+      else if(own === 'erjing' || own === 'anzhi'){ landFee = taxBase * 0.03; landFeeNote = '二类经适房 / 回迁 / 安置房土地出让金 3%'; }
+      else if(own === 'yijing'){ landFee = Math.max(0, taxBase - orig) * 0.70; landFeeNote = '一类经适房综合地价款 差额 70%'; }
+      else if(own === 'xianjia'){ landFee = Math.max(0, taxBase - orig) * 0.35; landFeeNote = '限价商品房土地收益 差额 35%'; }
+      else { landFeeNote = '商品房，无土地收益补缴'; }
+    } else { landFeeNote = '商办不适用住宅土地收益口径'; }
 
-//中介费买方
-const buyerAgentFee = dealPrice * (buyerAgentRate/100);
+    /* ---------- 承担方拆分 ---------- */
+    var sellerStatutory = vat + surtax + incomeTax + landTax + stamp;
+    var sellerOnBuyer = borne === 'buyer' ? sellerStatutory : 0;
+    var buyerStatutory = deed + landFee;
+    var buyerFees = deed + landFee + stamp + regFee + repairFee + otherFee + agencyFee + sellerOnBuyer;
 
-//登记费
-const regFee = 80;
+    /* ---------- 贷款 ---------- */
+    var minDownRate;
+    if(!isRes) minDownRate = 0.5;
+    else minDownRate = buyer === 1 ? 0.2 : (buyer === 2 ? 0.25 : 1);
+    var maxLoanVal = price > 0 ? loanBase * (1 - minDownRate) : 0;
 
-//买方合计税费
-let buyerTotalTax = deedTax + landTax + repairFund + regFee + buyerAgentFee + otherFee;
-//卖方法定税费
-let sellerStatTax = vat + personalTax;
-let actualSellerTaxPay = (sellerTaxBear==="buyer")?sellerStatTax:0;
+    var fundBlocked = fundBlock || !isRes || buyer >= 3;
+    var fundRate = buyer === 2 ? FUND_RATE_SECOND : FUND_RATE_FIRST;
 
-//首付
-let needFirstPay = dealPrice - maxLoanPossible;
-let cashTotal = deposit + needFirstPay + buyerTotalTax + actualSellerTaxPay;
-if(sellerMortgage==="needRedeem") cashTotal += redeemAmt;
+    var termByAge = 68 - bAge;
+    var termByHouse = (renov ? land : (struct === 'concrete' ? 60 : 50) - age) - 3;
+    var fundTermRaw = Math.min(30, termByAge, termByHouse);
+    var fundTerm = Math.max(0, Math.floor(fundTermRaw));
+    var termDriver = '';
+    if(fundTermRaw <= 0) termDriver = '无可贷年限';
+    else if(termByAge <= termByHouse && termByAge <= 30) termDriver = '受年龄限制';
+    else if(termByHouse < 30) termDriver = renov ? '受剩余土地年限限制' : '受房龄限制';
+    else termDriver = '可贷满 30 年';
 
-//还款测算，取公积金可贷与最大可贷
-let useGjjLoan = Math.min(gjjMaxTotal,maxLoanPossible);
-let useComLoan = Math.max(0,maxLoanPossible-useGjjLoan);
-if(loanType==="gjj") useComLoan=0;
-if(loanType==="com") useGjjLoan=0;
-if(loanType==="cash"){useGjjLoan=0;useComLoan=0;maxLoanYear=0;}
+    var perYear = single ? 20 : 40;
+    var yearsCeil = Math.ceil(fYears);
+    var quotaByYears = yearsCeil * perYear * 1e4;
+    var baseCap = (single ? 120 : 240) * 1e4;
+    var upSum = (upOut ? 20 : 0) + (upGreen ? 40 : 0) + (upKids ? 40 : 0);
+    var upApplied = Math.min(upSum, single ? 60 : 100) * 1e4;
+    var fundCap = baseCap + upApplied;
 
-function calcEMI(p,r,n){
-let mRate=r/12;
-if(mRate===0) return 0;
-return p*mRate*Math.pow(1+mRate,n)/(Math.pow(1+mRate,n)-1);
-}
-function calcEMB(p,r,n){
-let mRate=r/12;
-let mon=n;
-let firstMonth = p/mon + p*mRate;
-return firstMonth;
-}
-const nYear = loanMaxYear;
-const nMon = nYear*12;
-const emiGjj = calcEMI(useGjjLoan,rateGjj,nMon);
-const emiCom = calcEMI(useComLoan,rateCom,nMon);
-const totalEMI = emiGjj + emiCom;
+    var abilityMonthly = income * 0.6;
+    var abilityLoan = fundTerm > 0 ? pvOf(fundRate / 12, fundTerm * 12, abilityMonthly) : 0;
+    var fundLimit = Math.min(quotaByYears, fundCap, maxLoanVal);
+    var fundLoan = fundBlocked ? 0 : Math.max(0, Math.min(fundLimit, abilityLoan));
 
-const embGjj = calcEMB(useGjjLoan,rateGjj,nMon);
-const embCom = calcEMB(useComLoan,rateCom,nMon);
-const totalEMB = embGjj + embCom;
+    var cTermMax = !isRes ? 10 : Math.min(30, Math.max(0, 70 - bAge));
+    var commTerm = Math.max(0, Math.min(cTerm, cTermMax));
 
-//债务比校验
-const familyMonthIncome = manIncome + womanIncome;
-let debtRatioWarn="";
-if(familyMonthIncome>0 && totalEMI>0){
-const totalMonthOut = totalEMI + otherDebtMonth;
-const ratio = totalMonthOut / familyMonthIncome;
-if(ratio>0.6) debtRatioWarn="⚠️总负债收入比超过60%，银行审批存在风险";
-else debtRatioWarn="✅负债收入比合规";
-}
+    var fundLoanFinal = 0, commLoan = 0;
+    if(mode === 'fund'){ fundLoanFinal = fundLoan; }
+    else if(mode === 'commercial'){ commLoan = maxLoanVal; }
+    else if(mode === 'combo'){
+      fundLoanFinal = fundLoan;
+      commLoan = Math.max(0, maxLoanVal - fundLoan);
+    }
+    var totalLoan = fundLoanFinal + commLoan;
+    var down = Math.max(0, price - totalLoan);
+    var downRate = price > 0 ? down / price : 0;
 
-//风险提示
-let riskList=[];
-if(evalPrice>0 && evalPrice<dealPrice){
-const diffPrice = dealPrice - evalPrice;
-riskList.push(`⚠️评估价低于成交价，需要额外现金补差：${diffPrice.toLocaleString()}元`);
-}
-if(hasUnsettleGjj===1) riskList.push("⚠️家庭存在未结清公积金贷款，无法办理公积金贷款");
-if(sellerMortgage==="needRedeem") riskList.push("⚠️需要买方出资赎楼，建议走资金监管，存在交易风险");
-if(renovated===1) riskList.push("⚠️老旧小区改造：必须评估报告备注，公积金才认可年限放宽");
-if(debtRatioWarn) riskList.push(debtRatioWarn);
+    var fr = fundRate / 12, cr = cRate / 12;
+    var fundN = fundTerm * 12, commN = commTerm * 12;
+    var mFund = fundLoanFinal > 0 ? annuity(fundLoanFinal, fr, fundN) : 0;
+    var mComm = commLoan > 0 ? annuity(commLoan, cr, commN) : 0;
+    var monthly1 = mFund + mComm;
 
-//输出文本
-let out = [];
-out.push("==== 房屋交易概况 ====");
-out.push(`小区：${community}`);
-out.push(`面积：${area}㎡｜建成年份：${buildYear||"未填"}`);
-out.push(`成交总价：${dealPrice.toLocaleString()} 元`);
-out.push(`评估价：${evalPrice.toLocaleString()} 元`);
-out.push(`计税核定价：${taxBasePrice.toLocaleString()} 元`);
-out.push(`产权性质：${propertyType}`);
-out.push(`推断建筑结构：${buildStruct==="steelMix"?"钢混":"砖混"}`);
-out.push(`剩余土地年限推断：${remainLandYear}年`);
-out.push(`卖方房屋年限状态：${houseYearStatus}(卖方家庭)`);
-out.push(`主贷人年龄：${mainAge}岁；贷款最长可贷年限：${loanMaxYear}年`);
-out.push(`买方套数：${buySet===1?"首套":"二套"}`);
-out.push(`家庭月总收入：${familyMonthIncome.toLocaleString()}元；其他负债月供：${otherDebtMonth.toLocaleString()}元`);
-out.push("");
-out.push("==== 费用明细 ====");
-out.push(`定金（已付）：${deposit.toLocaleString()} 元`);
-out.push(`预估最低首付：${needFirstPay.toLocaleString()} 元`);
-out.push(`【买方税费】`);
-out.push(`  契税：${deedTax.toLocaleString()} 元`);
-if(landTax>0) out.push(`  ${landTaxNote}：${landTax.toLocaleString()} 元`);
-if(repairFund>0) out.push(`  补缴维修资金：${repairFund.toLocaleString()} 元`);
-out.push(`  登记费：${regFee} 元`);
-out.push(`  买方中介费(${buyerAgentRate}%)：${buyerAgentFee.toLocaleString()} 元`);
-out.push(`  其他杂费：${otherFee.toLocaleString()} 元`);
-out.push(`【卖方法定税费】增值税+个税：${sellerStatTax.toLocaleString()}元；实际承担：${sellerTaxBear==="buyer"?"买方":"卖方自理"}`);
-if(actualSellerTaxPay>0) out.push(`  买方代付卖方税费：${actualSellerTaxPay.toLocaleString()}元`);
-if(sellerMortgage==="needRedeem") out.push(`  赎楼资金：${redeemAmt.toLocaleString()}元`);
-out.push(`👉买方合计需要准备前期现金：${cashTotal.toLocaleString()}元`);
-out.push("");
-out.push("==== 贷款方案 ====");
-out.push(`公积金可贷上限(含上浮)：${gjjMaxTotal.toLocaleString()}元`);
-out.push(`计划公积金贷款：${useGjjLoan.toLocaleString()}元；利率：${(rateGjj*100).toFixed(2)}%`);
-out.push(`计划商业贷款：${useComLoan.toLocaleString()}元；利率：${(rateCom*100).toFixed(2)}%`);
-out.push(`贷款年限：${nYear}年(${nMon}期)`);
-out.push(`等额本息月供：${Math.round(totalEMI).toLocaleString()} 元`);
-out.push(`等额本金首月月供：${Math.round(totalEMB).toLocaleString()} 元`);
-out.push("");
-out.push("====风险预警====");
-if(riskList.length>0){riskList.forEach(r=>out.push(r));}else{out.push("✅未识别明显风险");}
-out.push("");
-out.push("【免责】本测算仅模拟，实际以税务、公积金中心、银行审批为准。");
+    var epFund = fundLoanFinal > 0 ? equalPrincipal(fundLoanFinal, fr, fundN) : {first:0,interest:0,total:0,dec:0};
+    var epComm = commLoan > 0 ? equalPrincipal(commLoan, cr, commN) : {first:0,interest:0,total:0,dec:0};
+    var monthly2 = epFund.first + epComm.first;
 
-getEl("resultOut").innerText = out.join("\n");
-window.lastReportText = out.join("\n");
-}
+    var interest1 = (mFund * fundN - fundLoanFinal) + (mComm * commN - commLoan);
+    var interest2 = epFund.interest + epComm.interest;
 
-function printReport(){
-if(!window.lastReportText){alert("请先点击开始测算");return;}
-getEl("reportBody").innerHTML = `<pre style="font-size:13px;line-height:1.7;">${window.lastReportText}</pre>`;
-getEl("reportWrap").style.display="block";
-window.print();
-getEl("reportWrap").style.display="none";
-}
+    var upfront = down + buyerFees;
+    var grandTotal = price + buyerFees + interest1;
+    var debtRatio = income > 0 ? (monthly1 + otherDebt) / income : 0;
+    var payRatio = income > 0 ? monthly1 / income : 0;
+
+    /* ---------- 界面渲染 ---------- */
+    $('rUpfront').innerHTML = (upfront/1e4).toFixed(1) + '<small>万元</small>';
+    $('rDown').textContent = wan(down) + '（' + pct(downRate) + '，含定金 ' + wan(deposit) + '）';
+    $('rTaxFee').textContent = wan(buyerFees);
+    $('rFundLoan').textContent = fundLoanFinal > 0 ? wan(fundLoanFinal) : '—';
+    $('rCommLoan').textContent = commLoan > 0 ? wan(commLoan) : '—';
+    $('rMonthly').textContent = monthly1 > 0 ? money(monthly1) + '/月' : '全款无月供';
+    $('rMonthly2').textContent = monthly2 > 0 ? money(monthly2) + '/月' : '—';
+    $('rInterest').textContent = wan(interest1);
+    $('rTotal').textContent = wan(grandTotal);
+
+    var termTxt = [];
+    if(fundLoanFinal > 0) termTxt.push('公积金 ' + fundTerm + ' 年');
+    if(commLoan > 0) termTxt.push('商贷 ' + commTerm + ' 年');
+    $('rTermTip').textContent = termTxt.length ? termTxt.join(' / ') : '—';
+
+    $('holdChip').textContent = holdLabel(holdY, unique);
+    $('ageHint').textContent = '房龄 ' + age + ' 年 · ' + (struct === 'concrete' ? '钢混' : '砖混') + (structSel === 'auto' ? '（推断）' : '');
+    $('landChip').textContent = '剩余 ' + land + ' 年（' + (isRes ? '70' : '40') + ' − 房龄）';
+    $('fundTermChip').textContent = fundTerm > 0 ? (fundTerm + ' 年 · ' + termDriver) : (fundBlocked ? '公积金不可用' : '无可贷年限');
+    $('incomeChip').textContent = money(incomeTotal) + (single ? '（审核按男方 ' + money(incomeM) + '）' : '');
+    var downTxt = !isRes ? '50%（商办）' : (buyer === 1 ? '20%（首套）' : buyer === 2 ? '25%（二套）' : '100%（三套停贷）');
+    $('downChip').textContent = downTxt;
+
+    /* ---------- 明细表 ---------- */
+    var rows = [
+      ['契税', deed, '计税价 ' + wan(taxBase) + ' × ' + pct(deedRate)],
+      ['产权土地收益', landFee, landFeeNote],
+      ['增值税', vat, vatNote],
+      ['增值税附加', surtax, '增值税 × 6%（小规模减半）'],
+      ['个人所得税', incomeTax, itNote],
+      ['土地增值税', landTax, ltNote],
+      ['印花税', stamp, isRes ? '个人买卖住房免征' : '0.05%'],
+      ['维修资金', repairFee, repairDue ? '未缴，买方补缴' : '已缴 / 无需补缴'],
+      ['其他杂费', otherFee, '评估 / 代办 / 公证等'],
+      ['中介费', agencyFee, wan(price) + ' × ' + (agency*100).toFixed(1) + '%（买方承担）'],
+      ['不动产登记费', regFee, isRes ? '住宅 80 元/件' : '非住宅 550 元/件']
+    ];
+    var tb = '';
+    rows.forEach(function(r){
+      tb += '<tr><td>' + r[0] + '<span class="note">' + r[2] + '</span></td><td>' + money(r[1]) + '</td><td>' + wan(r[1]) + '</td></tr>';
+    });
+    tb += '<tr class="total"><td>买方实际承担合计</td><td>' + money(buyerFees) + '</td><td>' + wan(buyerFees) + '</td></tr>';
+    $('taxBody').innerHTML = tb;
+
+    var lb = '';
+    lb += '<tr><td>贷款金额</td><td>' + money(totalLoan) + '</td><td>' + money(totalLoan) + '</td></tr>';
+    lb += '<tr><td>首月月供</td><td>' + money(monthly1) + '</td><td>' + money(monthly2) + '</td></tr>';
+    lb += '<tr><td>每月递减</td><td>—</td><td>' + money(epFund.dec + epComm.dec) + '</td></tr>';
+    lb += '<tr><td>总利息</td><td>' + money(interest1) + '</td><td>' + money(interest2) + '</td></tr>';
+    lb += '<tr class="total"><td>还款总额</td><td>' + money(totalLoan + interest1) + '</td><td>' + money(totalLoan + interest2) + '</td></tr>';
+    $('loanBody').innerHTML = lb;
+
+    /* ---------- 校验提示 ---------- */
+    var tips = [];
+    function add(level, text){ tips.push({level:level, text:text}); }
+
+    if(!isRes){
+      add('warn', '商办（非住宅）不能用公积金，首付一般不低于 50%、贷款年限通常不超过 10 年，税费按差额增值税 + 土地增值税 + 差额个税计算。');
+    }
+    if(buyer >= 3 && isRes){
+      add('risk', '家庭第三套及以上住房不予公积金贷款、商贷也已停贷，按全款测算。');
+    }
+    if(fundBlocked){
+      add('risk', '本次公积金不可用：' + (fundBlock ? '家庭已有未结清公积金贷款' : (!isRes ? '商办不能用公积金' : '三套及以上停贷')) + '；如需贷款请走纯商贷或组合贷中的商贷部分。');
+    }
+    if(evalP > 0 && evalP < price){
+      var gapDown = (price - evalP) * (1 - minDownRate);
+      add('warn', '评估价低于网签价，贷款按孰低核定，实际可贷减少约 ' + wan(gapDown) + '，首付需多准备。');
+    }
+    if(landFee > 0){
+      add('warn', '该产权性质需补缴土地收益 ' + wan(landFee) + '（' + landFeeNote + '），已计入买方前期资金；最终以住建 / 税务核定为准。');
+    }
+    if(mortgage === 'redeem'){
+      add('risk', '卖方需赎楼：若不走带押过户，买方可能需先垫付卖方剩余贷款 ' + wan(mortBal) + '，务必走资金监管、合同写清违约责任与赎回时限。');
+    }
+    if(mortgage === 'transfer'){
+      add('ok', '走带押过户，无需买方垫资解押；具体以银行与不动产登记中心办理结果为准。');
+    }
+    if(fundLoanFinal > 0 && fundTerm < 30){
+      add('ok', '公积金可贷 ' + fundTerm + ' 年（' + termDriver + '）：年龄上限 68 岁、房屋剩余年限扣 3 年，取短者。');
+    }
+    if(fundTermRaw <= 0 && !fundBlocked && isRes){
+      add('risk', '按当前房龄 / 结构测算已无公积金可贷年限，只能商贷或全款；如已完成改造，请确认评估报告已备注。');
+    }
+    if(structSel === 'auto' && !renov && isRes){
+      add('warn', '建筑结构按建成年份推断为' + (struct === 'concrete' ? '钢混' : '砖混') + '：未改造房子的年限由结构（砖混 50 / 钢混 60 年）直接决定，若确知实际结构请手动切换。');
+    }
+    if(mode === 'fund' && isRes && fundLoan < maxLoanVal && buyer < 3 && !fundBlocked){
+      add('warn', '公积金可贷 ' + wan(fundLoan) + '，比可贷上限少 ' + wan(maxLoanVal - fundLoan) + '，差额需提高首付或改走组合贷。');
+    }
+    if(mode === 'combo'){
+      add('ok', '组合贷：公积金 ' + wan(fundLoanFinal) + ' + 商贷 ' + wan(commLoan) + '；部分卖方不接受组合贷，审批周期也更长，签约前需确认。');
+    }
+    var abilityCapped = abilityLoan < fundLimit && fundLoanFinal > 0;
+    if(abilityCapped){
+      add('warn', '公积金可贷额度被还款能力压到 ' + wan(fundLoanFinal) + '（月供上限按家庭月收入 60% 计，即 ' + money(abilityMonthly) + '/月）；想多贷可延长年限、提高收入证明或增加共同借款人。');
+    }
+    if(monthly1 > 0 && income > 0 && !abilityCapped){
+      if(debtRatio > 0.6) add('risk', '月供加其他负债占家庭月收入 ' + pct(debtRatio) + '，超过 60% 债务比红线，公积金 / 银行审批大概率降额。');
+      else if(payRatio > 0.5) add('risk', '房贷月供占家庭月收入 ' + pct(payRatio) + '，超过 50%，建议降低额度或延长年限。');
+      else if(debtRatio > 0.5) add('warn', '月供加其他负债占家庭月收入 ' + pct(debtRatio) + '，偏紧；审核口径一般不超过 60%。');
+      else add('ok', '月供占家庭月收入 ' + pct(payRatio) + '，还款能力充足。');
+    }
+    if(!full2 && isRes){
+      add('warn', '不满 2 年：增值税按 3% 征收率全额缴纳约 ' + wan(vat) + '，比满 2 年多出这笔成本。');
+    }
+    if(isRes){
+      if(full5 && unique){
+        add('ok', '满五唯一（卖方家庭）：增值税与个人所得税均免征。');
+      } else {
+        var why = full5 ? '满五但不唯一，只有「满五唯一」才免征' : (unique ? '虽为唯一住房但不满 5 年，仍要缴' : '不满五且不唯一，需缴');
+        add('warn', '个人所得税 ' + wan(incomeTax) + '（' + itNote + '）：' + why + '；可用原值凭证改按差额 20% 试算取低。');
+      }
+    }
+    if(borne === 'buyer'){
+      add('warn', '合同约定卖方税费由买方承担，卖方法定税费 ' + wan(sellerStatutory) + ' 已计入买方前期资金。');
+    }
+    if(taxP > 0 && Math.abs(taxP - price) / price > 0.001){
+      add('warn', '税务核定价 ' + wan(taxP) + ' 与成交价不一致，税费按孰高的核定价计算，签约前以税务窗口核定为准。');
+    }
+    if(repairFee > 0){
+      add('ok', '维修资金补缴 ' + wan(repairFee) + ' 已计入前期资金。');
+    }
+    if(tips.length === 0) add('ok', '当前参数下各项校验通过。');
+
+    $('tips').innerHTML = tips.map(function(t){
+      return '<div class="tip-item tip-' + t.level + '"><span class="dot"></span><span>' + t.text + '</span></div>';
+    }).join('');
+
+    /* ---------- 打印报告 ---------- */
+    var prName = ($('fName').value || '').trim();
+    var buyerTxt = buyer === 1 ? '首套' : (buyer === 2 ? '二套' : '三套及以上');
+    var modeTxt = {fund:'纯公积金贷款', combo:'组合贷（公积金 + 商贷）', commercial:'纯商业贷款', cash:'全款'}[mode];
+    var structTxt = (struct === 'concrete' ? '钢混（按 60 年）' : '砖混（按 50 年）') + (structSel === 'auto' ? '，按建成年份推断' : '，手动指定');
+    var ownTxt = {commercial_house:'商品房', gongfang:'已购公房（房改房）', yijing:'一类经济适用房', erjing:'二类经适房 / 回迁房', xianjia:'限价商品房', anzhi:'安置房'}[own];
+    var fundTxt = isRes ? ((single ? '单人缴存' : '夫妻双缴存') + '，较长一方缴存 ' + fYears + ' 年') : '不适用（非住宅不能用公积金）';
+    var incomeTxt = money(incomeM) + ' + ' + money(incomeF) + ' = ' + money(incomeTotal) + (single ? '（审核按男方）' : '');
+    var mortTxt = {none:'无抵押', transfer:'有抵押 · 走带押过户', redeem:'有抵押 · 需买方赎楼'}[mortgage];
+    var dd = new Date();
+    var dateStr = dd.getFullYear() + ' 年 ' + (dd.getMonth() + 1) + ' 月 ' + dd.getDate() + ' 日';
+
+    var overRows = [
+      ['小区 / 位置', prName || '（未填写）'],
+      ['成交价（网签价）', wan(price)],
+      ['评估价', wan(evalP)],
+      ['税务核定价', wan(taxP) + '（税费按孰高计税）'],
+      ['建筑面积', area + ' ㎡'],
+      ['房屋性质 / 产权性质', (isRes ? '住宅' : '商办 / 非住宅') + ' · ' + ownTxt],
+      ['建成年份 / 房龄', year + ' 年 / 房龄 ' + age + ' 年'],
+      ['建筑结构', structTxt],
+      ['剩余土地使用年限', land + ' 年（' + (isRes ? '70' : '40') + ' − 房龄）'],
+      ['老旧小区改造', renov ? '已完成改造，且评估报告已备注' : '未列入或评估报告未备注'],
+      ['卖方抵押情况', mortTxt + (mortgage === 'redeem' ? '，剩余贷款 ' + wan(mortBal) : '')],
+      ['卖方持有情况', holdLabel(holdY, unique) + '（' + holdY + ' 年）'],
+      ['买方套数', buyerTxt],
+      ['卖方税费承担方', borne === 'buyer' ? '买方实际承担' : '卖方自理（法定）'],
+      ['中介费率（买方承担）', (agency * 100).toFixed(1) + '%' + (Math.abs(agency - 0.01) < 1e-6 ? '，买卖双方各 1%' : '')],
+      ['贷款方式', modeTxt],
+      ['公积金资质', fundTxt],
+      ['家庭月收入', incomeTxt],
+      ['每月其他负债', otherDebt > 0 ? money(otherDebt) + ' / 月' : '无'],
+      ['主贷人年龄', bAge + ' 岁'],
+      ['个税计算口径', itNote]
+    ];
+    var overHTML = overRows.map(function(r){ return '<tr><td style="width:36%">' + r[0] + '</td><td>' + r[1] + '</td></tr>'; }).join('');
+
+    var kvRows = [
+      ['定金（计入首付）', wan(deposit)],
+      ['首付款', wan(down) + '（' + pct(downRate) + '）'],
+      ['买方法定税费（契税 + 土地收益等）', wan(buyerStatutory)],
+      ['卖方法定税费（增值税 / 个税 / 土增等）', wan(sellerStatutory) + (borne === 'buyer' ? '，由买方承担' : '，由卖方承担')],
+      ['维修资金 + 其他杂费', wan(repairFee + otherFee)],
+      ['中介费 + 登记费', wan(agencyFee + regFee)],
+      ['<span class="hl">前期一次性资金合计</span>', '<span class="hl">' + wan(upfront) + '</span>'],
+      ['公积金贷款', fundLoanFinal > 0 ? wan(fundLoanFinal) + '，' + fundTerm + ' 年' : '无'],
+      ['商业贷款', commLoan > 0 ? wan(commLoan) + '，' + commTerm + ' 年' : '无'],
+      ['月供（等额本息）', monthly1 > 0 ? money(monthly1) + ' / 月' : '全款无月供'],
+      ['首月月供（等额本金）', monthly2 > 0 ? money(monthly2) + ' / 月' : '—'],
+      ['贷款总利息（等额本息）', wan(interest1)],
+      ['购房总支出（含利息）', wan(grandTotal)]
+    ];
+    var kvHTML = kvRows.map(function(r){ return '<div><span>' + r[0] + '</span><b>' + r[1] + '</b></div>'; }).join('');
+
+    var taxHTML = rows.map(function(r){
+      return '<tr><td>' + r[0] + '</td><td class="num">' + money(r[1]) + '</td><td class="note">' + r[2] + '</td></tr>';
+    }).join('') + '<tr><td><b>买方实际承担合计</b></td><td class="num"><b>' + money(buyerFees) + '</b></td><td class="note">含约定由买方承担的卖方税费 ' + money(sellerOnBuyer) + '</td></tr>';
+
+    var loanHTML =
+      '<tr><td>贷款金额</td><td class="num">' + money(totalLoan) + '</td><td class="num">' + money(totalLoan) + '</td></tr>' +
+      '<tr><td>首月月供</td><td class="num">' + money(monthly1) + '</td><td class="num">' + money(monthly2) + '</td></tr>' +
+      '<tr><td>每月递减</td><td class="num">—</td><td class="num">' + money(epFund.dec + epComm.dec) + '</td></tr>' +
+      '<tr><td>总利息</td><td class="num">' + money(interest1) + '</td><td class="num">' + money(interest2) + '</td></tr>' +
+      '<tr><td><b>还款总额</b></td><td class="num"><b>' + money(totalLoan + interest1) + '</b></td><td class="num"><b>' + money(totalLoan + interest2) + '</b></td></tr>';
+
+    var riskItems = tips.filter(function(t){ return t.level !== 'ok'; }).map(function(tp){ return '<li>' + tp.text + '</li>'; }).join('');
+    var okItems = tips.filter(function(t){ return t.level === 'ok'; }).map(function(tp){ return '<li>' + tp.text + '</li>'; }).join('');
+
+    $('printReport').innerHTML =
+      '<div class="rp">' +
+        '<div class="rp-head"><div>' +
+          '<div class="rp-kicker">北京二手房购房测算报告</div>' +
+          '<div class="rp-title">' + (prName || '二手房购房测算') + '</div>' +
+        '</div><div class="rp-date">测算日期：' + dateStr + '<br>政策口径：2026 年 11 月现行规定<br>金额单位：元 / 万元</div></div>' +
+
+        '<h3>一、房屋与交易概况</h3>' +
+        '<table><tbody>' + overHTML + '</tbody></table>' +
+
+        '<h3>二、资金与贷款结论</h3>' +
+        '<div class="kv">' + kvHTML + '</div>' +
+
+        '<h3>三、税费与费用明细</h3>' +
+        '<table><thead><tr><th style="width:26%">项目</th><th style="width:20%">金额</th><th>计算口径</th></tr></thead><tbody>' + taxHTML + '</tbody></table>' +
+        '<p>买方合计需备资金 ' + wan(upfront) + '（首付 ' + wan(down) + '、税费及中介等 ' + wan(buyerFees) + '）。法定卖方税费为增值税、附加、个人所得税、土地增值税及印花税，是否由买方承担以合同约定为准。</p>' +
+
+        '<h3>四、两种还款方式对比</h3>' +
+        '<table><thead><tr><th>项目</th><th>等额本息</th><th>等额本金</th></tr></thead><tbody>' + loanHTML + '</tbody></table>' +
+
+        '<h3>五、风险预警与校验结论</h3>' +
+        (riskItems ? '<div class="risk-box"><ul>' + riskItems + '</ul></div>' : '<p>本次测算未发现风险预警项。</p>') +
+        (okItems ? '<ul>' + okItems + '</ul>' : '') +
+
+        '<h3>六、政策依据</h3>' +
+        '<p>1. 契税：家庭唯一住房 140㎡ 及以下 1%、140㎡ 以上 1.5%；家庭第二套 140㎡ 及以下 1%、以上 2%；三套及以上及非住宅 3%（2024 年 12 月 1 日起）。</p>' +
+        '<p>2. 增值税：个人销售购买满 2 年的住房免征；不足 2 年的按 3% 征收率全额缴纳（2026 年 1 月 1 日起）。附加税费按增值税的 6%（小规模减半）估算。</p>' +
+        '<p>3. 个人所得税：满五唯一（卖方家庭）免征；否则按核定 1% 或差额 20% 孰低计征。北京已自 2024 年 12 月 1 日起取消普通 / 非普通住房标准。</p>' +
+        '<p>4. 公积金：每缴存一年可贷 20 万元（单人）/ 40 万元（夫妻双人），首套上限 120 万 / 240 万元，符合城六区外购房、绿色建筑、多子女条件可叠加上浮（单人最高 60 万、双人最高 100 万）；首套公积金利率 2.6%、二套 3.075%；首套最低首付 20%、二套 25%。</p>' +
+        '<p>5. 公积金贷款期限最长 30 年：按「68 岁 − 主贷人年龄」与「房屋剩余年限」取短；已完成老旧小区改造且评估报告备注的，按剩余土地使用年限减 3 年，未改造的按砖混 50 年 / 钢混 60 年减已用年限再减 3 年。</p>' +
+        '<p>6. 商办（非住宅）：不能使用公积金，首付一般不低于 50%；税费按差额 5% 增值税、差额 20% 个人所得税、0.05% 印花税及土地增值税（四档累进，本表为估算）计算。</p>' +
+        '<p>7. 已购公房、经适房、回迁 / 安置房、限价房上市涉及土地出让金或综合地价款，比例与差额口径按房屋来源类型核定，本表为估算。</p>' +
+
+        '<h3>七、注意事项</h3>' +
+        '<p>1. 评估报告须标注「已完成老旧小区综合整治」，否则贷款年限按普通楼龄口径压缩，月供需重新核算；名单本身不自动生效。</p>' +
+        '<p>2. 满五唯一指卖方家庭满五年且唯一，与买方无关；增值税只看是否满 2 年。</p>' +
+        '<p>3. 契税计税基数以税务核定价为准，可能与网签价不同；面积以不动产权证登记的建筑面积为准。</p>' +
+        '<p>4. 购房资格以社保 / 个税缴纳记录、家庭套数及限购政策核验为准，本工具不做资格审核。</p>' +
+        '<p>5. 二手房贷款按网签价与评估价孰低核定，评估价低于网签价时，实际可贷减少、首付相应增加。</p>' +
+        '<p>6. 中介费按买卖双方各 1% 计，本表仅计入买方承担部分；卖方税费是否转嫁给买方以合同为准。</p>' +
+        '<p>7. 表内未含评估费、担保费、代办费、维修资金以外的其他杂费，签约前应让中介列明全部费用清单。</p>' +
+        '<p>8. 公积金贷款不足时改走组合贷：公积金部分按公积金规则，商贷部分按银行利率与收入流水单独审核；组合贷审批周期较长，部分卖方不接受。</p>' +
+        '<p>9. 赎楼交易必须通过资金监管，写明解押时限、违约责任及税费承担，避免垫资风险。</p>' +
+
+        '<div class="rp-sign">本报告由测算工具按用户输入自动生成，仅供购房决策参考，不构成贷款承诺或税务、法律意见。各项税费以税务机关核定及完税凭证为准；贷款额度、期限、利率以北京住房公积金管理中心及贷款银行最终审批为准。生成时间：' + dateStr + '。微信内打开时建议复制链接到系统浏览器，打印 / 导出 PDF 功能更完整。</div>' +
+      '</div>';
+
+    lastResult = {
+      upfront: upfront, down: down, buyerFees: buyerFees, sellerTax: sellerStatutory,
+      fundLoan: fundLoanFinal, commLoan: commLoan, monthly1: monthly1,
+      interest1: interest1, total: grandTotal, fundTerm: fundTerm, commTerm: commTerm,
+      hold: holdLabel(holdY, unique)
+    };
+  }
+
+  /* ---------- 场景 ---------- */
+  var lastResult = {};
+  var defaults = {
+    fName:'', fPrice:'165', fEval:'165', fTaxPrice:'165', fArea:'58.9', fType:'residential',
+    fOwn:'commercial_house', fStruct:'auto', fYear:'2001',
+    fAgency:'1', fHoldYears:'3.5', fOrig:'90', fBuyer:'1', fTaxBorne:'seller',
+    fRepairDue:false, fRepairFee:'0', fOtherFee:'0', fMortgage:'none', fMortBal:'0',
+    fCommRate:'3.05', fMode:'fund', fCommTerm:'25', fBorrowAge:'35', fFundYears:'7.5',
+    fIncomeM:'12000', fIncomeF:'7420', fOtherDebt:'0', fDeposit:'10', fTaxMethod:'auto'
+  };
+  var checks = { fRenovated:true, fUnique:false, fSingle:false, fFundBlock:false,
+    fRepairDue:false, fUpOut:false, fUpGreen:false, fUpKids:false };
+
+  function setVal(id, v){ var el = $(id); if(el){ el.value = v; } }
+  function setChk(id, v){ var el = $(id); if(el){ el.checked = v; } }
+
+  function applyScenario(name){
+    Object.keys(defaults).forEach(function(k){ setVal(k, defaults[k]); });
+    Object.keys(checks).forEach(function(k){ setChk(k, checks[k]); });
+    if(name === 'full5'){ setVal('fHoldYears','6'); setChk('fUnique', true); }
+    if(name === 'full5no'){ setVal('fHoldYears','6'); setChk('fUnique', false); }
+    if(name === 'two'){ setVal('fHoldYears','3'); setChk('fUnique', false); }
+    if(name === 'notwo'){ setVal('fHoldYears','1.5'); setChk('fUnique', true); }
+    if(name === 'old'){ setChk('fRenovated', true); setVal('fYear', '1988'); }
+    if(name === 'combo'){ setVal('fMode','combo'); setVal('fFundYears','2'); }
+    if(name === 'commercial'){ setVal('fType','commercial'); setVal('fMode','commercial'); setVal('fCommTerm','10'); setVal('fBuyer','2'); }
+    calc();
+  }
+
+  document.querySelectorAll('.chip').forEach(function(c){
+    c.addEventListener('click', function(){ applyScenario(c.getAttribute('data-sc')); });
+  });
+
+  $('btnReset').addEventListener('click', function(){ applyScenario('reset'); });
+  $('btnPrint').addEventListener('click', function(){ window.print(); });
+
+  $('btnPreview').addEventListener('click', function(){
+    var on = document.body.classList.toggle('preview');
+    this.textContent = on ? '返回测算' : '预览报告';
+    if(on && $('printReport').scrollIntoView){
+      $('printReport').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+  });
+
+  $('btnCopy').addEventListener('click', function(){
+    var r = lastResult;
+    if(!r || r.upfront === undefined){ calc(); r = lastResult; }
+    var txt = [
+      '北京二手房购房测算（' + r.hold + '）',
+      '前期一次性资金：' + wan(r.upfront) + '（首付 ' + wan(r.down) + '、买方税费费用 ' + wan(r.buyerFees) + '）',
+      '公积金可贷：' + (r.fundLoan ? wan(r.fundLoan) + '，' + r.fundTerm + ' 年' : '不适用'),
+      '商贷：' + (r.commLoan ? wan(r.commLoan) + '，' + r.commTerm + ' 年' : '无'),
+      '首月月供（等额本息）：' + money(r.monthly1),
+      '贷款总利息：' + wan(r.interest1),
+      '购房总支出（含利息）：' + wan(r.total)
+    ].join('\n');
+    var done = function(){ var b = $('btnCopy'); var old = b.textContent; b.textContent = '已复制'; setTimeout(function(){ b.textContent = old; }, 1400); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done, function(){ fallbackCopy(txt, done); });
+    } else { fallbackCopy(txt, done); }
+  });
+
+  function fallbackCopy(txt, done){
+    var ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); done(); }catch(e){ alert(txt); }
+    document.body.removeChild(ta);
+  }
+
+  // 勾选框高亮
+  document.querySelectorAll('.chk input[type=checkbox]').forEach(function(cb){
+    var sync = function(){ cb.closest('.chk').classList.toggle('on', cb.checked); };
+    cb.addEventListener('change', sync); sync();
+  });
+
+  // 勾选「维修资金未缴」时按 100 元/㎡ 预填，可再手改
+  $('fRepairDue').addEventListener('change', function(){
+    if(this.checked && num('fRepairFee') === 0){
+      setVal('fRepairFee', (num('fArea') * 100 / 1e4).toFixed(2));
+    }
+  });
+
+  // 数字输入过滤：只留数字和一个小数点
+  document.querySelectorAll('input[data-num]').forEach(function(el){
+    el.addEventListener('input', function(){
+      var v = this.value.replace(/[^\d.]/g, '');
+      var parts = v.split('.');
+      if(parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
+      if(v !== this.value) this.value = v;
+    });
+  });
+
+  document.addEventListener('input', calc);
+  document.addEventListener('change', calc);
+  applyScenario('reset');
+})();
 </script>
 </body>
 </html>
