@@ -357,8 +357,13 @@ body.preview .grid,body.preview .tables,body.preview .chips,body.preview .foot,b
             <label>缴存人数</label>
             <label class="chk" id="wrapSingle"><input id="fSingle" type="checkbox">仅一人缴存（不勾为双缴存）</label>
           </div>
-          <div class="f"><label>缴存年限 <em>较长一方，算额度用</em></label><div class="inp hasunit"><input id="fFundYears" data-num type="number" step="0.5" value="7.5"><span class="unit">年</span></div></div>
+          <div class="f"><label>缴存年限 <em>较长方，按月数÷12 向上取整</em></label><div class="inp hasunit"><input id="fFundYears" data-num type="number" step="0.01" value="7.67"><span class="unit">年</span></div></div>
           <div class="f"><label>可贷年限 <em>自动测算，无需填</em></label><div class="chk" style="cursor:default;background:#fbfcff"><span id="fundTermChip" style="font-weight:600;color:var(--brand);font-size:12.5px">—</span></div></div>
+        </div>
+        <div class="row three" style="margin-top:12px">
+          <div class="f"><label>计生活费人数 <em>官方每人每月 1778 元</em></label><div class="inp hasunit"><input id="fLifePersons" data-num type="number" step="1" value="2"><span class="unit">人</span></div></div>
+          <div class="f"><label>配偶收入是否计入还款能力</label><label class="chk" id="wrapCountSpouse"><input id="fCountSpouse" type="checkbox" checked>计入（不勾只算主贷人）</label></div>
+          <div class="f"><label>月还款上限 <em>自动，官方口径</em></label><div class="chk" style="cursor:default;background:#fbfcff"><span id="capChip" style="font-weight:600;font-size:12.5px;color:var(--brand)">—</span></div></div>
         </div>
         <div class="row three" style="margin-top:12px">
           <div class="f"><label>男方月收入 <em>或缴存基数</em></label><div class="inp hasunit"><input id="fIncomeM" data-num type="number" step="100" value="12000"><span class="unit">元</span></div></div>
@@ -367,10 +372,10 @@ body.preview .grid,body.preview .tables,body.preview .chips,body.preview .foot,b
         </div>
         <div class="row three" style="margin-top:12px">
           <div class="f"><label>上浮：城六区户籍购城外首套</label><label class="chk" id="wrapUpOut"><input id="fUpOut" type="checkbox">+20 万</label></div>
-          <div class="f"><label>上浮：绿色 / 装配式 / 超低能耗</label><label class="chk" id="wrapUpGreen"><input id="fUpGreen" type="checkbox">+40 万</label></div>
+          <div class="f"><label>上浮：绿色 / 装配式 / 超低能耗</label><label class="chk" id="wrapUpGreen"><input id="fUpGreen" type="checkbox">+20 万（官网实测）</label></div>
           <div class="f"><label>上浮：本市户籍二孩及以上</label><label class="chk" id="wrapUpKids"><input id="fUpKids" type="checkbox">+40 万</label></div>
         </div>
-        <p class="note-line">贷款年限不能手填：由「68 岁 − 主贷人年龄」与「房屋剩余年限」取短自动得出。额度按缴存年限 ×20 万（单人）/ 40 万（双人），并受上限、评估价、还款能力三重限制；仅一人缴存时还款能力按男方收入审核。</p>
+        <p class="note-line">额度算法已与官网「公积金贷款计算器」对齐（2026-11 实测）：取四者的最小值 —— ①缴存年限额（向上取整年数 ×20 万单人 / 40 万双人）；②政策上限（首套 120 万 / 240 万，绿色 +20 万、多子女 +40 万，城六区外购房 +20 万按问答手工叠加）；③评估价×（1−最低首付比例）；④还款能力＝（计入月收入 −1778×生活费人数）×60% 折算成的贷款现值。贷款年限由「68 岁 − 主贷人年龄」与「房屋剩余年限」取短得出。</p>
       </div>
 
     </div>
@@ -390,6 +395,7 @@ body.preview .grid,body.preview .tables,body.preview .chips,body.preview .foot,b
         <h2>贷款与月供<span class="tip" id="rTermTip">—</span></h2>
         <div class="rows">
           <div class="line"><span class="l">公积金可贷</span><span class="r" id="rFundLoan">—</span></div>
+          <div class="line"><span class="l">额度受限项</span><span class="r" id="rFundBreak">—</span></div>
           <div class="line"><span class="l">商贷金额</span><span class="r" id="rCommLoan">—</span></div>
           <div class="line"><span class="l">首月月供（等额本息）</span><span class="r big" id="rMonthly">—</span></div>
           <div class="line"><span class="l">首月月供（等额本金）</span><span class="r" id="rMonthly2">—</span></div>
@@ -510,7 +516,9 @@ body.preview .grid,body.preview .tables,body.preview .chips,body.preview .foot,b
     var fYears= num('fFundYears');
     var incomeM = num('fIncomeM'), incomeF = num('fIncomeF');
     var incomeTotal = incomeM + incomeF;
-    var income = single ? incomeM : incomeTotal;
+    var countSpouse = $('fCountSpouse') ? $('fCountSpouse').checked : true;
+    var lifePersons = Math.max(1, num('fLifePersons') || 2);
+    var income = single ? incomeM : (countSpouse ? incomeTotal : incomeM);
     var bAge  = num('fBorrowAge');
     var cRate = num('fCommRate') / 100;
     var cTerm = num('fCommTerm');
@@ -616,17 +624,27 @@ body.preview .grid,body.preview .tables,body.preview .chips,body.preview .foot,b
     else termDriver = '可贷满 30 年';
 
     var perYear = single ? 20 : 40;
-    var yearsCeil = Math.ceil(fYears);
+    var yearsCeil = Math.ceil(fYears - 1e-9);
     var quotaByYears = yearsCeil * perYear * 1e4;
     var baseCap = (single ? 120 : 240) * 1e4;
-    var upSum = (upOut ? 20 : 0) + (upGreen ? 40 : 0) + (upKids ? 40 : 0);
-    var upApplied = Math.min(upSum, single ? 60 : 100) * 1e4;
-    var fundCap = baseCap + upApplied;
+    var upSum = (upOut ? 20 : 0) + (upGreen ? 20 : 0) + (upKids ? 40 : 0);
+    var fundCap = baseCap + upSum * 1e4;
 
-    var abilityMonthly = income * 0.6;
+    /* 官方口径：先扣基本生活费（每人每月 1778 元），再按 60% 计月还款上限 */
+    var lifeStd = 1778 * lifePersons;
+    var netIncome = Math.max(0, income - lifeStd);
+    var abilityMonthly = netIncome * 0.6;
     var abilityLoan = fundTerm > 0 ? pvOf(fundRate / 12, fundTerm * 12, abilityMonthly) : 0;
     var fundLimit = Math.min(quotaByYears, fundCap, maxLoanVal);
     var fundLoan = fundBlocked ? 0 : Math.max(0, Math.min(fundLimit, abilityLoan));
+    var bindItems = [
+      ['缴存年限额', quotaByYears],
+      ['政策上限', fundCap],
+      [isRes ? '评估价×首付后' : '可贷上限', maxLoanVal],
+      ['还款能力', abilityLoan]
+    ];
+    var bindMin = bindItems[0];
+    bindItems.forEach(function(it){ if(it[1] < bindMin[1]) bindMin = it; });
 
     var cTermMax = !isRes ? 10 : Math.min(30, Math.max(0, 70 - bAge));
     var commTerm = Math.max(0, Math.min(cTerm, cTermMax));
@@ -665,6 +683,13 @@ body.preview .grid,body.preview .tables,body.preview .chips,body.preview .foot,b
     $('rDown').textContent = wan(down) + '（' + pct(downRate) + '，含定金 ' + wan(deposit) + '）';
     $('rTaxFee').textContent = wan(buyerFees);
     $('rFundLoan').textContent = fundLoanFinal > 0 ? wan(fundLoanFinal) : '—';
+    if($('rFundBreak')){
+      $('rFundBreak').textContent = fundBlocked ? '公积金不可用' :
+        ('年限 ' + wan(quotaByYears) + '｜上限 ' + wan(fundCap) + '｜评估 ' + wan(maxLoanVal) + '｜能力 ' + wan(abilityLoan) + ' → 取 ' + bindMin[0]);
+    }
+    if($('capChip')){
+      $('capChip').textContent = money(abilityMonthly) + '（收入 ' + money(income) + ' − 生活费 ' + money(lifeStd) + '）×60%';
+    }
     $('rCommLoan').textContent = commLoan > 0 ? wan(commLoan) : '—';
     $('rMonthly').textContent = monthly1 > 0 ? money(monthly1) + '/月' : '全款无月供';
     $('rMonthly2').textContent = monthly2 > 0 ? money(monthly2) + '/月' : '—';
@@ -886,7 +911,7 @@ body.preview .grid,body.preview .tables,body.preview .chips,body.preview .foot,b
         '<p>1. 契税：家庭唯一住房 140㎡ 及以下 1%、140㎡ 以上 1.5%；家庭第二套 140㎡ 及以下 1%、以上 2%；三套及以上及非住宅 3%（2024 年 12 月 1 日起）。</p>' +
         '<p>2. 增值税：个人销售购买满 2 年的住房免征；不足 2 年的按 3% 征收率全额缴纳（2026 年 1 月 1 日起）。附加税费按增值税的 6%（小规模减半）估算。</p>' +
         '<p>3. 个人所得税：满五唯一（卖方家庭）免征；否则按核定 1% 或差额 20% 孰低计征。北京已自 2024 年 12 月 1 日起取消普通 / 非普通住房标准。</p>' +
-        '<p>4. 公积金：每缴存一年可贷 20 万元（单人）/ 40 万元（夫妻双人），首套上限 120 万 / 240 万元，符合城六区外购房、绿色建筑、多子女条件可叠加上浮（单人最高 60 万、双人最高 100 万）；首套公积金利率 2.6%、二套 3.075%；首套最低首付 20%、二套 25%。</p>' +
+        '<p>4. 公积金：每缴存一年可贷 20 万元（单人）/ 40 万元（夫妻双人），首套上限 120 万 / 240 万元，绿色 +20 万、多子女 +40 万、城六区外购房 +20 万可叠加；还款能力按「（计入月收入 − 每人 1778 元基本生活费）×60%」折算，与官网计算器一致；首套公积金利率 2.6%、二套 3.075%；首套最低首付 20%、二套 25%。</p>' +
         '<p>5. 公积金贷款期限最长 30 年：按「68 岁 − 主贷人年龄」与「房屋剩余年限」取短；已完成老旧小区改造且评估报告备注的，按剩余土地使用年限减 3 年，未改造的按砖混 50 年 / 钢混 60 年减已用年限再减 3 年。</p>' +
         '<p>6. 商办（非住宅）：不能使用公积金，首付一般不低于 50%；税费按差额 5% 增值税、差额 20% 个人所得税、0.05% 印花税及土地增值税（四档累进，本表为估算）计算。</p>' +
         '<p>7. 已购公房、经适房、回迁 / 安置房、限价房上市涉及土地出让金或综合地价款，比例与差额口径按房屋来源类型核定，本表为估算。</p>' +
@@ -920,10 +945,10 @@ body.preview .grid,body.preview .tables,body.preview .chips,body.preview .foot,b
     fOwn:'commercial_house', fStruct:'auto', fYear:'2001',
     fAgency:'1', fHoldYears:'3.5', fOrig:'90', fBuyer:'1', fTaxBorne:'seller',
     fRepairDue:false, fRepairFee:'0', fOtherFee:'0', fMortgage:'none', fMortBal:'0',
-    fCommRate:'3.05', fMode:'fund', fCommTerm:'25', fBorrowAge:'35', fFundYears:'7.5',
-    fIncomeM:'12000', fIncomeF:'7420', fOtherDebt:'0', fDeposit:'10', fTaxMethod:'auto'
+    fCommRate:'3.05', fMode:'fund', fCommTerm:'25', fBorrowAge:'35', fFundYears:'7.67',
+    fIncomeM:'12000', fIncomeF:'7420', fOtherDebt:'0', fDeposit:'10', fTaxMethod:'auto', fLifePersons:'2'
   };
-  var checks = { fRenovated:true, fUnique:false, fSingle:false, fFundBlock:false,
+  var checks = { fRenovated:true, fUnique:false, fSingle:false, fFundBlock:false, fCountSpouse:true,
     fRepairDue:false, fUpOut:false, fUpGreen:false, fUpKids:false };
 
   function setVal(id, v){ var el = $(id); if(el){ el.value = v; } }
